@@ -1,0 +1,72 @@
+<% layout('/layouts/default.html', {title: '字典管理', libs: ['dataGrid']}){ %>
+<div class="card bd-0">
+   <div class="card-header d-flex align-items-start justify-content-between box-header">
+     <div class="pt-1">参数设置</div>
+     <div class="d-flex">
+         <button type="button" id="btnSearch" title="查询" class="btn btn-xs btn-default"><i  class="fa fa-filter"></i>查询</button>
+         <% if(expIf("hasAuthority('sys:dictType:edit')")){ %>
+         <button type="button" href="${ctx}/sys/dictType/form" class="btn btn-xs btn-primary mg-l-10 btnTool" title="新增角色"><i  class="fa fa-plus"></i>新增</button>
+         <% } %>
+     </div>
+   </div>
+   <div class="card-body pd-10">
+     <#form:form id="searchForm" model="${dictType}" action="${ctx}/sys/dictType/listData" method="post"  class="form-horizontal"
+			data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+       <div class="form-group">
+         <div class="input-group wd-250">
+           <div class="input-group-prepend">
+             <span class="input-group-text">字典名称</span>
+           </div>
+           <#form:input path="dictName" class="form-control" />
+         </div>
+       </div>
+       <div class="form-group">
+         <button type="submit" class="btn btn-primary btn-sm">查询</button>
+         <button type="reset" class="btn btn-default btn-sm">重置</button>
+       </div>
+     </#form:form>
+     <table id="dataGrid"></table>
+     <div id="dataGridPage"></div>
+   </div>
+ </div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'字典名称', name:'dictName', index:'dict_name', width:200, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/sys/dictType/form?id='+row.id+'" class="btnList" data-title="编辑字典类型">'+(val||row.id)+'</a>';
+		}},
+		{header:'字典类型', name:'dictType', index:'dict_type', width:200, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/sys/dictData/list?dictType='+row.dictType+'" class="btnList" data-title="编辑字典数据">'+(val||row.id)+'</a>';
+		}},
+		{header:'更新时间', name:'updateTime', index:'update_time', width:150, align:"center"},
+		{header:'备注信息', name:'remarks', index:'remarks', width:200, align:"left"},
+		{header:'状态', name:'status', index:'status', width:60, fixed:true, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('sys_status')}, val, '未知', true);
+		}},
+		{header:'操作', name:'actions', width:130, fixed:true, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(expIf("hasAuthority('sys:dictType:edit')")){ %>
+				actions.push('<a href="${ctx}/sys/dictType/form?id='+row.id+'" class="btnList" title="编辑字典类型"><i class="la la-edit"></i></a>&nbsp;');
+			<% } %>
+			actions.push('<a href="${ctx}/sys/dictData/list?dictType='+row.dictType+'" class="btnList" title="字典数据"><i class="la la-files-o"></i></a>&nbsp;');
+			<% if(expIf("hasAuthority('sys:dictType:edit')")){ %>
+			if (row.status == Global.STATUS_NORMAL){
+					actions.push('<a href="${ctx}/sys/dictType/disable?id='+row.id+'" class="btnList" title="停用字典类型" data-confirm="确认要停用该字典类型吗？"><i class="la la-minus-circle"></i></a>&nbsp;');
+				}
+				if (row.status == Global.STATUS_DISABLE){
+					actions.push('<a href="${ctx}/sys/dictType/enable?id='+row.id+'" class="btnList" title="启用字典类型" data-confirm="确认要启用该字典类型吗？"><i class="la la-check-circle"></i></a>&nbsp;');
+				}
+				actions.push('<a href="${ctx}/sys/dictType/delete?id='+row.id+'" class="btnList" title="删除字典类型" data-confirm="确认要删除该字典类型吗？"><i class="la la-trash"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

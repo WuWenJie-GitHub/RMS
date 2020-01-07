@@ -1,0 +1,74 @@
+<% layout('/layouts/default.html', {title: '字典数据管理', libs: ['validate']}){ %>
+<div class="card bd-0">
+    <div class="card-header d-flex align-items-start justify-content-between box-header fixed">
+        <div class="pt-1">${dictData.isNewRecord ? '新增字典' : '编辑字典'}（${dictData.dictType}）</div>
+        <div class="d-flex">
+        </div>
+    </div>
+    <#form:form id="inputForm" model="${dictData}" action="${ctx}/sys/dictData/save" method="post">
+    	<#form:hidden path="id" />
+    	<#form:hidden path="dictType"/>
+        <div class="card-body card-content-fixed pd-sm-t-30 pd-sm-b-40 pd-sm-x-30">
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label>字典标签</label>
+                    <#form:input path="dictLabel" maxlength="100" class="form-control required "/>
+                </div>
+                <div class="form-group col-md-6">
+                    <label>字典键值</label>
+	                <#form:input path="dictValue" maxlength="100" class="form-control required" />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label>排序号</label>
+                    <#form:input path="dictSort" maxlength="10" class="form-control required digits"/>
+                </div>
+                <div class="form-group col-md-6">
+                    <label>字典描述</label>
+	                <#form:input path="description" maxlength="500" class="form-control "/>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label>CSS样式</label>
+                    <#form:input path="cssStyle" maxlength="500" class="form-control "/>
+                </div>
+                <div class="form-group col-md-6">
+                    <label>CSS类名</label>
+	                <#form:input path="cssClass" maxlength="500" class="form-control "/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>参数描述</label>
+                 <#form:textarea path="remarks" class="form-control" row="5" placeholder="请输入" />
+            </div>
+        </div>
+        <div class="card-footer pd-sm-l-30">
+            <div class="row">
+                <div class="col-sm-offset-2 col-sm-10">
+                	<% if(expIf("hasAuthority('sys:dictData:edit')")){ %>
+                    <button type="submit" class="btn btn-sm btn-primary">保存提交</button>
+                    <% } %>
+                    <button type="button" class="btn btn-sm btn-default" onclick="js.closeCurrentTabPage()">关闭窗口</button>
+                </div>
+            </div>
+        </div>
+    </#form:form>
+</div>
+<% } %>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				js.closeCurrentTabPage(function(contentWindow){
+					contentWindow.page();
+				});
+			}
+		}, "json");
+    }
+});
+</script>
+</body></html>

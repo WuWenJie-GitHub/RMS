@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template>
+	<name>viewList</name>
+	<filePath>src/main/resources/templates/${lastPackageName}/${moduleName}/${subModuleName}</filePath>
+	<fileName>${className}List.html</fileName>
+	<content><![CDATA[
+\<% layout('/layouts/default.html', {title: '${functionNameSimple}管理', libs: ['dataGrid']}){ %>
+ <div class="card bd-0">
+    <div class="card-header d-flex align-items-start justify-content-between pd-10-f">
+      <div class="pt-1">${functionNameSimple}管理</div>
+      <div class="d-flex">
+          <button type="button" id="btnSearch" title="查询" class="btn btn-xs btn-default"><i class="fa fa-filter"></i>查询</button>
+          <% if(table.isTreeEntity){ %>
+          <button type="button" id="btnRefreshTree" class="btn btn-xs btn-default mg-l-10" title="刷新"><i class="fa fa-redo-alt"></i> 刷新</button>
+          <button type="button" id="btnExpandTreeNode" class="btn btn-xs btn-default mg-l-10" title="展开一级"><i class="fa fa-angle-double-down"></i> 展开</button>
+          <button type="button" id="btnCollapseTreeNode" class="btn btn-xs btn-default mg-l-10" title="折叠全部"><i class="fa fa-angle-double-up"></i> 折叠</button>
+          <% } %>
+          \<% if(expIf("hasAuthority('${permissionPrefix}:edit')")){ %>
+          <a href="\${ctx}/${urlPrefix}/form" class="btn btn-xs btn-primary mg-l-10 btnTool" title="新增${functionNameSimple}"><i class="fa fa-plus"></i>新增</a>
+          \<% } %>
+      </div>
+    </div>
+    <div class="card-body pd-10">
+       <${'#'}form:form id="searchForm" model="\${${className}}" action="\${ctx}/${urlPrefix}/listData" method="post" class="form-horizontal"
+					data-page-no="\${parameter.pageNo}" data-page-size="\${parameter.pageSize}" data-order-by="\${parameter.orderBy}">
+		<% for(c in table.columnList){ %>
+			<% if(c.isQuery == "1"){ %>
+		<div class="form-group">
+			<div class="input-group wd-250">
+				<div class="input-group-prepend">
+					<span class="input-group-text">${c.comments}</span>
+         		</div>
+		<% if(c.showType == 'input' || c.showType == 'textarea'){ %>
+				<% if (c.queryType == 'BETWEEN'){ %>
+				<${'#'}form:input path="${c.javaField}"${c.dataLength != "0" ? ' maxlength="'+c.dataLength+'"' : ''} class="form-control"/>
+				&nbsp;--&nbsp;
+				<${'#'}form:input path="${c.javaField}"${c.dataLength != "0" ? ' maxlength="'+c.dataLength+'"' : ''} class="form-control"/>
+				<% } else { %>
+				<${'#'}form:input path="${c.javaField}"${c.dataLength != "0" ? ' maxlength="'+c.dataLength+'"' : ''} class="form-control"/>
+				<% } %>
+		<% }else if(c.showType == 'select' || c.showType == 'select_multiple'){
+				var isMultiple = (c.showType == 'select_multiple'); %>
+				<div class="wd-100">
+				<${'#'}form:select path="${c.javaField}" dictType="${c.optionMap['dictType']}"${isMultiple?' multiple="true"':''} blankOption="true" class="form-control select2"/>
+				</div>
+		<% }else if(c.showType == 'radio'){ %>
+				<${'#'}form:radio path="${c.javaField}" dictType="${c.optionMap['dictType']}" blankOption="true" class="form-control"/>
+		<% }else if(c.showType == 'checkbox'){ %>
+				<${'#'}form:checkbox path="${c.javaField}" dictType="${c.optionMap['dictType']}" blankOption="true" class="form-control"/>
+		<% }else if(c.showType == 'date' || c.showType == 'datetime'){
+				var isTime = (c.showType == 'datetime'); %>
+				<% if (c.queryType == 'BETWEEN'){ %>
+				<${'#'}form:input path="${c.javaField}" readonly="true" maxlength="20" class="form-control Wdate-date${isTime?'time':''}"
+					dataFormat="date${isTime?'time':''}" onclick="WdatePicker({dateFmt:'yyyy-MM-dd${isTime?' HH:mm':''}',isShowClear:false,onpicked:function(){${c.attrName}_lte.click()}});"/>
+				&nbsp;--&nbsp;
+				<${'#'}form:input path="${c.javaField}" readonly="true" maxlength="20" class="form-control Wdate-date${isTime?'time':''}"
+					dataFormat="date${isTime?'time':''}" onclick="WdatePicker({dateFmt:'yyyy-MM-dd${isTime?' HH:mm':''}',isShowClear:false});"/>
+				<% } else { %>
+				<${'#'}form:input path="${c.javaField}" readonly="true" maxlength="20" class="form-control Wdate-date${isTime?'time':''}"
+					dataFormat="date${isTime?'time':''}" onclick="WdatePicker({dateFmt:'yyyy-MM-dd${isTime?' HH:mm':''}',isShowClear:false});"/>
+				<% } %>
+		<% }else if(c.showType == 'userselect'){ %>
+				 
+		<% }else if(c.showType == 'officeselect'){ %>
+				 
+		<% }else if(c.showType == 'areaselect'){ %>
+		
+		<% } %>
+			</div>
+		</div>
+	<% } %>
+<% } %>
+		<div class="form-group">
+			<button type="submit" class="btn btn-primary btn-sm">查询</button>
+			<button type="reset" class="btn btn-default btn-sm">重置</button>
+		</div>
+		</${'#'}form:form>
+		<table id="dataGrid"></table>
+      <% if(!table.isTreeEntity){ %>
+		<div id="dataGridPage"></div>
+	  <% } %>
+    </div>
+  </div>
+\<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		<%
+		// 是否是第一列
+		var firstColumn = true;
+		// 获取到唯一ID的url参数字符串
+		var idParam = '';
+		var idParam2 = '';
+		for(pk in table.pkList){
+			idParam = idParam + (pkLP.index!=1?'&':'') + pk.javaField + '=\'+row.' + pk.javaField + '+\'';
+			idParam2 = pk.javaField;
+		}
+		// 是否仅查询模板
+		var isQueryTpl = table.tplCategory == 'query';
+		// 生成树表的节点列
+		if(table.isTreeEntity){
+			for(c in table.columnList){
+				if(c.javaField == table.treeViewNameJavaField){
+		%>
+		{header:'${c.comments}', name:'${c.javaField}', index:'${c.columnName}', width:250, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '( '+row.${table.treeViewCodeJavaField}+' ) '+'<a href="\${ctx}/${urlPrefix}/form?${idParam}" class="btnList" data-title="${isQueryTpl?'查看':'编辑'}${functionNameSimple}")}">'+(val||row.id)+'</a>';
+		}},
+		<%
+					firstColumn = false;
+					break;
+				}
+			}
+		}
+		%>
+		<%
+		for(c in table.columnList){ 
+			if(c.isList == "1"){
+				// 如果是树结构的字段，则自动忽略
+				if(table.isTreeEntity && @StringUtils.inString(c.columnName, 'parent_code',
+					'parent_codes', 'tree_sorts', 'tree_leaf', 'tree_level', 'tree_names')
+						&& c.javaField != table.treeViewCodeJavaField
+						&& c.javaField != table.treeViewNameJavaField){
+				}
+				// 如果是首列，则输出带链接的列
+				else if(firstColumn){
+					firstColumn = false;
+		%>
+		{header:'${c.comments}', name:'${c.javaField}', index:'${c.columnName}', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="\${ctx}/${urlPrefix}/form?${idParam}" class="btnList" data-title="${isQueryTpl?'查看':'编辑'}${functionNameSimple}">'+(val||row.id)+'</a>';
+		}},
+				<% }else if(c.showType == 'select' || c.showType == 'select_multiple' || c.showType == 'checkbox' || c.showType == 'radio'){ %>
+		{header:'${c.comments}', name:'${c.javaField}', index:'${c.columnName}', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(\${@DictUtils.getDictListJson('${c.optionMap['dictType']}')}, val, '未知}', true);
+		}},
+				<% }else if(c.showType == "userselect" || c.showType == "officeselect" || c.showType == "areaselect"){ %>
+		{header:'${c.comments}', name:'${c.javaField}', index:'${c.columnName}', width:150, align:"center"},
+				<% }else{
+						if (@StringUtils.inString(c.javaType, 'javutil.Date', 'Integer', 'Long')){
+				%>
+		{header:'${c.comments}', name:'${c.javaField}', index:'${c.columnName}', width:150, align:"center"},
+				<%
+						}else if (@StringUtils.inString(c.javaType, 'Float', 'Double')){
+				%>
+		{header:'${c.comments}', name:'${c.javaField}', index:'${c.columnName}', width:150, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+				<%
+						}else {
+				%>
+		{header:'${c.comments}', name:'${c.javaField}', index:'${c.columnName}', width:150, align:"left"},
+				<%
+						}
+				}
+			}
+		}
+		%>
+		{header:'操作', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(isQueryTpl){ %>
+			actions.push('<a href="\${ctx}/${urlPrefix}/form?${idParam}" class="btnList" title="查看${functionNameSimple}"><i class="la la-file-o"></i></a>&nbsp;');
+			<% }else{ %>
+			\<% if(expIf("hasAuthority('${permissionPrefix}:edit')")){ %>
+				actions.push('<a href="\${ctx}/${urlPrefix}/form?${idParam}" class="btnList" title="编辑${functionNameSimple}"><i class="la la-edit"></i></a>&nbsp;');
+				<% if(@ObjectUtils.toBoolean(table.optionMap['isHaveDisableEnable'])){ %>
+				if (row.status == Global.STATUS_NORMAL){
+					actions.push('<a href="\${ctx}/${urlPrefix}/disable?${idParam}" class="btnList" title="停用${functionNameSimple}" data-confirm="确认要停用该${functionNameSimple}吗？")}"><i class="la la-minus-circle"></i></a>&nbsp;');
+				}
+				if (row.status == Global.STATUS_DISABLE){
+					actions.push('<a href="\${ctx}/${urlPrefix}/enable?${idParam}" class="btnList" title="启用${functionNameSimple}" data-confirm="确认要启用该${functionNameSimple}吗？")}"><i class="la la-check-circle"></i></a>&nbsp;');
+				}
+				<% } %>
+				<% if(@ObjectUtils.toBoolean(table.optionMap['isHaveDelete'])){ %>
+				actions.push('<a href="\${ctx}/${urlPrefix}/delete?${idParam}" class="btnList" title="删除${functionNameSimple}" data-confirm="确认要删除该${functionNameSimple}<% if(table.isTreeEntity){ %>及所有子${functionNameSimple}<% } %>吗？")}"<% if(table.isTreeEntity){ %> data-deltreenode="'+row.${idParam2}+'"<% } %>><i class="la la-trash"></i></a>&nbsp;');
+				<% } %>
+				<% if(table.isTreeEntity){ %>
+				actions.push('<a href="\${ctx}/${urlPrefix}/form?parentCode='+row.${idParam2}+'" class="btnList" title="新增下级${functionNameSimple}"><i class="la la-plus-square"></i></a>&nbsp;');
+				<% } %>
+			\<% } %>
+			<% } %>
+			return actions.join('');
+		}}
+	],
+	<% if(table.isTreeEntity){ %>
+	dataId: '${table.treeViewCodeJavaField}',
+	treeGrid: true,			// 启用树结构表格
+	defaultExpandLevel: 0,	// 默认展开的层次
+	expandNodeClearPostData: '${table.treeViewNameJavaField}', // 展开节点清理请求参数数据（一般设置查询条件的字段属性，否则在查询后，不能展开子节点数据）
+	<% } %>
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>
+</body></html>]]>
+	</content>
+</template>

@@ -1,0 +1,22 @@
+<%
+var p = {
+
+	// 标签参数
+	id: id!,					// 元素ID，如果不填写，则与name相同
+	path: path!,				// 绑定form上model中属性的值
+	name: name!,				// 元素名称，不填写
+	value: value!,				// 元素值
+	defaultValue: defaultValue! // 默认值 v4.1.5
+	
+};
+var id = p.id!p.name!p.path;
+var name = p.name!p.path;
+var value = p.value!;
+if(isEmpty(value!)&&isNotEmpty(p.path!)){
+	value = form.path(p.path);
+}
+if(isEmpty(value!)){
+	value = p.defaultValue;
+}
+%>
+<textarea id="${id}" name="${name}" <%if(isNotEmpty(row!)){%> row="${row!}"<%}%><%if(isNotEmpty(readonly!)&&@ObjectUtils.toBoolean(readonly)){%> readonly="readonly"<%}%><%if(isNotEmpty(disabled!)&&@ObjectUtils.toBoolean(disabled)){%> disabled="disabled"<%}%><%if(isNotEmpty(minlength!)){%> maxlength="${maxlength!}"<%}%><%if(isNotEmpty(maxlength!)){%> maxlength="${maxlength!}"<%}%><%if(isNotEmpty(placeholder!)){%> placeholder="${placeholder!}"<%}%><%if(isNotEmpty(class!)){%> class="${class!}"<%}%><%if(isNotEmpty(style!)){%> style="${style!}"<%}%>>${value}</textarea>

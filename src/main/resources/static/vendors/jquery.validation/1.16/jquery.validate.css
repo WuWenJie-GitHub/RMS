@@ -1,0 +1,38 @@
+label.error {
+	background: url("images/unchecked.gif") no-repeat 0 0;
+	padding-left: 18px;
+	padding-bottom: 2px;
+	font-weight: bold;
+	color: #ea5200;
+	margin-left: 10px
+}
+
+label.has-error {
+	top: auto;
+	left: 15px;
+	padding: 0 5px 1px;
+	font-size: 11px;
+	position: absolute;
+	color: #fff;
+	background: #dc3545;
+	z-index: 1000;
+	border-radius: 5px;
+}
+
+label.has-error:after {
+	border-color: rgba(0,0,0,0) rgba(0,0,0,0) #dc3545;
+	border-style: solid;
+	border-width: 6px;
+	content: "";
+	height: 0;
+	left: 15px;
+	position: absolute;
+	top: -11px
+}
+.form-group.has-feedback {
+    position: relative;
+}
+.form-group.has-error .form-control, .form-group.has-error {
+	border-color: #dc3545;
+	box-shadow: none;
+}

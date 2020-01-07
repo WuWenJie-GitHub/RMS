@@ -1,0 +1,67 @@
+<% layout('/layouts/default.html', {title: '用例用户管理', libs: ['dataGrid']}){ %>
+ <div class="card bd-0">
+    <div class="card-header d-flex align-items-start justify-content-between pd-10-f">
+      <div class="pt-1">用例用户管理</div>
+      <div class="d-flex">
+          <button type="button" id="btnSearch" title="查询" class="btn btn-xs btn-default"><i class="fa fa-filter"></i>查询</button>
+          <% if(expIf("hasAuthority('demo:testUser:edit')")){ %>
+          <a href="${ctx}/demo/testUser/form" class="btn btn-xs btn-primary mg-l-10 btnTool" title="新增用例用户"><i class="fa fa-plus"></i>新增</a>
+          <% } %>
+      </div>
+    </div>
+    <div class="card-body pd-10">
+       <#form:form id="searchForm" model="${testUser}" action="${ctx}/demo/testUser/listData" method="post" class="form-horizontal"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+		<div class="form-group">
+			<div class="input-group wd-250">
+				<div class="input-group-prepend">
+					<span class="input-group-text">用户名</span>
+         		</div>
+				<#form:input path="username" maxlength="50" class="form-control"/>
+			</div>
+		</div>
+		<div class="form-group">
+			<button type="submit" class="btn btn-primary btn-sm">查询</button>
+			<button type="reset" class="btn btn-default btn-sm">重置</button>
+		</div>
+		</#form:form>
+		<table id="dataGrid"></table>
+		<div id="dataGridPage"></div>
+    </div>
+  </div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'用户名', name:'username', index:'username', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/demo/testUser/form?id='+row.id+'" class="btnList" data-title="编辑用例用户">'+(val||row.id)+'</a>';
+		}},
+		{header:'状态', name:'status', index:'status', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('sys_status')}, val, '未知}', true);
+		}},
+		{header:'备注信息', name:'remarks', index:'remarks', width:150, align:"left"},
+		{header:'更新时间', name:'updateTime', index:'update_time', width:150, align:"left"},
+		{header:'操作', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(expIf("hasAuthority('demo:testUser:edit')")){ %>
+				actions.push('<a href="${ctx}/demo/testUser/form?id='+row.id+'" class="btnList" title="编辑用例用户"><i class="la la-edit"></i></a>&nbsp;');
+				if (row.status == Global.STATUS_NORMAL){
+					actions.push('<a href="${ctx}/demo/testUser/disable?id='+row.id+'" class="btnList" title="停用用例用户" data-confirm="确认要停用该用例用户吗？")}"><i class="la la-minus-circle"></i></a>&nbsp;');
+				}
+				if (row.status == Global.STATUS_DISABLE){
+					actions.push('<a href="${ctx}/demo/testUser/enable?id='+row.id+'" class="btnList" title="启用用例用户" data-confirm="确认要启用该用例用户吗？")}"><i class="la la-check-circle"></i></a>&nbsp;');
+				}
+				actions.push('<a href="${ctx}/demo/testUser/delete?id='+row.id+'" class="btnList" title="删除用例用户" data-confirm="确认要删除该用例用户吗？")}"><i class="la la-trash"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>
+</body></html>

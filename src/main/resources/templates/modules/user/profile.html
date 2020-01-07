@@ -1,0 +1,144 @@
+<% layout('/layouts/default.html', {title: '用户信息',  bodyClass: 'app-contact', libs: ['validate']}){ %>
+	<link rel="stylesheet" href="${ctxStatic}/css/tangdao.profile.css">
+	<div class="profile-wrapper">
+	  <div class="profile-sidebar pd-25 pd-l-50">
+  		<div class="profile-content-sidebar">
+	    <div class="clearfix mg-b-25">
+	      <div id="contactAvatar" class="pos-relative float-left">
+	        <div class="avatar avatar-xxl"><img src="${ctxStatic+user.avatar!'/images/user1.jpg'}" class="rounded" alt="用户头像"></div>
+	        <a href="#" class="profile-edit-photo"><i data-feather="edit-2"></i></a>
+	      </div>
+	    </div>
+	    <h5 id="contactName" class="tx-16 mg-b-5">${user.nickname!user.username}</h5>
+	    <p class="tx-13 tx-color-03 mg-b-20">${user.email!user.mobile}</p>
+		</div>
+	  </div><!-- profile-content-sidebar -->
+	<div class="profile-content">
+        <div class="profile-content-header">
+          <nav class="nav">
+            <a href="#contactInformation" class="nav-link active" data-toggle="tab">个人资料</a>
+            <a href="#contactLogs" class="nav-link" data-toggle="tab">个人地址设置</a>
+          </nav>
+        </div><!-- profile-content-header -->
+        <div class="profile-content-body">
+          <div class="tab-content">
+            <div id="contactInformation" class="tab-pane show active pd-15 pd-xl-20 pd-l-0">
+			  <#form:form id="inputForm" model="${user}" action="${ctx}/sys/user/save" method="post">
+			  <#form:hidden path="userCode"/>
+			  <div class="row row-sm">
+                <div class="col-lg-2 col-sm-8">
+                  <label class="tx-13 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">移动电话</label>
+                  <p class="tx-primary tx-rubik mg-b-0">
+                  	<#form:input path="mobile" readonly="true" maxlength="32" class="form-control "/>
+                  </p>
+                </div>
+                <div style="margin-top: 31px;">
+                	<button type="button" class="btn btn-sm btn-secondary">更换号码</button>
+                	<button type="button" class="btn btn-sm btn-secondary" disabled>解绑</button>
+                </div>
+                <div class="mg-t-30">
+	               	<div class="alert alert-warning" role="alert" style="margin-bottom: 0px; font-size: 13px;padding: 6px 10px;">
+	               		你已经开通自动续费功能，不可解绑手机号！
+	               	</div>
+                </div>
+              </div>
+              <div class="row row-sm mg-t-10">
+                 <div class="col-lg-4 col-sm-8">
+                  <label class="tx-13 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">用户昵称</label>
+                  <p class="mg-b-0">
+                  	<#form:input path="nickname" maxlength="32" class="form-control required "/>
+                  </p>
+                </div><!-- col -->
+              </div><!-- row -->
+              <div class="row row-sm mg-t-10">
+                 <div class="col-lg-4 col-sm-8">
+                  <label class="tx-13 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">性别</label>
+                  <div class="mg-b-0 radio-list d-flex pd-t-5">
+                  	<#form:radio path="sex" dictType="sys_user_sex"/>
+                  </div>
+                </div><!-- col -->
+              </div><!-- row -->
+              <div class="row row-sm mg-t-10">
+                <div class="col-lg-8 col-sm-8">
+                  <label class="tx-13 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">签名</label>
+                  <p class="tx-13 mg-b-0">
+                  	<#form:textarea path="sign" class="form-control" row="3" />
+                  </p>
+                </div>
+              </div><!-- row -->
+
+              <h6 class="mg-t-40 mg-b-10">联系信息</h6>
+              <div class="row row-sm">
+                 <div class="col-lg-4 col-sm-8 mg-t-10">
+                  <label class="tx-13 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">邮件地址</label>
+                  <p class="tx-primary mg-b-0">
+                  	<#form:input path="email" maxlength="32" class="form-control "/>
+                  </p>
+                </div>
+                <div class="col-lg-4 col-sm-8  mg-t-10">
+                  <label class="tx-13 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">电话号码</label>
+                  <p class="tx-primary tx-rubik mg-b-0">
+                  	<#form:input path="phone" maxlength="32" class="form-control "/>
+                  </p>
+                </div>
+              </div>
+              <div class="row row-sm">
+                <div class="col-lg-4 col-sm-8  mg-t-10">
+                  <label class="tx-13 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">公司信息</label>
+                  <p class="mg-b-0">
+                  	<#form:input name="companyName" maxlength="32" class="form-control "/>
+                  </p>
+                </div>
+                <div class="col-lg-4 col-sm-8  mg-t-10">
+                  <label class="tx-13 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">岗位信息</label>
+                  <p class="mg-b-0">
+                  	<#form:input name="postName" maxlength="32" class="form-control "/>
+                  </p>
+                </div>
+              </div>
+              <h6 class="mg-t-40 mg-b-10">最近登录</h6>
+              <div class="row row-sm"> 
+                <div class="col-sm-6">
+                  <label class="tx-13 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">最近一次登录时间</label>
+                  <p class="mg-b-0">${user.lastLoginDate, dateFormat}</p>
+                </div>
+              </div>
+              <div class="row row-sm">
+                <div class="col-sm-6">
+                  <label class="tx-13 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">登录地址</label>
+                  <p class="mg-b-0">${user.lastLoginIp}</p>
+                </div>
+              </div>
+              <div class="mg-b-40"></div>
+              <div class="row row-sm">
+              	<div class="col-sm-6">
+              	<button type="submit" class="btn btn-sm btn-primary">更新</button>
+              	</div>
+              </div>
+              </#form:form>
+            </div>
+            <div id="contactLogs" class="tab-pane pd-20 pd-xl-25">
+              <div class="d-flex align-items-center justify-content-between mg-b-30">
+                <h6 class="tx-15 mg-b-0">Call &amp; Message Logs</h6>
+                <a href="#" class="btn btn-sm btn-white d-flex align-items-center"><i class="icon ion-md-time mg-r-5 tx-16 lh--9"></i> Clear History</a>
+              </div>
+            </div><!-- tab-pane -->
+          </div><!-- tab-content -->
+        </div><!-- profile-content-body -->
+
+        
+      </div><!-- profile-content -->
+	</div>
+<% } %>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+		}, "json");
+    }
+});
+
+
+</script>
+</body></html>

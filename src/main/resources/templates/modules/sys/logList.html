@@ -1,0 +1,78 @@
+<% layout('/layouts/default.html', {title: '访问日志查询', libs: ['dataGrid']}){ %>
+<div class="card bd-0">
+    <div class="card-header d-flex align-items-start justify-content-between box-header">
+      <div class="pt-1">日志查询</div>
+      <div class="d-flex">
+          <button type="button" id="btnSearch" title="查询" class="btn btn-xs btn-default"><i  class="fa fa-filter"></i>查询</button>
+      </div>
+    </div>
+    <div class="card-body pd-10">
+      <#form:form id="searchForm" model="${log}" action="${ctx}/sys/log/listData" method="post" class="form-horizontal"
+				data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+        <div class="form-group">
+          <div class="input-group wd-250">
+            <div class="input-group-prepend">
+              <span class="input-group-text">日志标题</span>
+            </div>
+            <#form:input path="logTitle" class="form-control" />
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="input-group" style="width:420px;">
+            <div class="input-group-prepend">
+              <span class="input-group-text">操作时间</span>
+            </div>
+            <#form:input name="d1" class="form-control mg-r-5" />
+            <#form:input name="d2" class="form-control" />
+          </div>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary btn-sm">查询</button>
+          <button type="reset" class="btn btn-default btn-sm">重置</button>
+        </div>
+      </#form:form>
+      <table id="dataGrid"></table>
+      <div id="dataGridPage"></div>
+    </div>
+  </div>
+<% } %>
+<script>
+//初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'日志标题', name:'logTitle', index:'log_title', width:200, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/sys/log/form?id='+row.id+'" class="btnList" data-title="日志详情">'+(val||row.id)+'</a>';
+		}},
+		{header:'请求地址', name:'requestUri', index:'request_uri', width:260, align:"left", formatter: function(val, obj, row, act){
+			return '<span title="['+row.requestMethod+'] '+row.serverAddr+row.requestUri+'">'+ row.requestUri;
+		}},
+		{header:'日志类型', name:'logType', index:'log_type', width:100, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('sys_log_type')}, val, '未知', true);
+		}},
+		{header:'操作用户', name:'createByName', index:'create_by_name', width:100, align:"center", formatter: function(val, obj, row, act){
+			return '<span data-toggle="tooltip" title="账号：'+row.createBy+'">'+ row.createByName;
+		}},
+		{header:'异常', name:'isException', index:'is_exception', width:60, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('sys_yes_no')}, val, '未知', true);
+		}},
+		{header:'业务类型', name:'bizType', index:'biz_type', width:90, align:"center"},
+		{header:'业务主键', name:'bizKey', index:'biz_key', width:90, align:"center"},
+		{header:'操作时间', name:'createDate', index:'create_date', width:100, align:"center"},
+		{header:'客户端IP', name:'remoteAddr', index:'remote_addr', width:100, align:"center"},
+		{header:'设备名称', name:'deviceName', index:'device_name', width:100, align:"center"},
+		{header:'浏览器名', name:'browserName', index:'browser_name', width:100, align:"center"},
+		{header:'响应时间', name:'executeTimeFormat', index:'execute_time', width:100, align:"center"}/* ,
+		{header:'操作', name:'actions', width:130, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+				actions.push('<a href="${ctx}/sys/log/form?id='+row.id+'" class="btnList" title="日志详情"><i class="fa fa-pencil"></i></a>&nbsp;');
+			return actions.join('');
+		}} */
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		$('[data-toggle="tooltip"]').tooltip();
+	}
+});
+</script>
+</body></html>

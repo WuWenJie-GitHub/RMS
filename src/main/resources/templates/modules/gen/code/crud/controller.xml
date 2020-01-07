@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template>
+	<name>controller</name>
+	<filePath>src/main/java/${packageName}/${moduleName}/web/${subModuleName}</filePath>
+	<fileName>${ClassName}Controller.java</fileName>
+	<content><![CDATA[
+package ${packageName}.${moduleName}.web${isNotEmpty(subModuleName)?'.'+subModuleName:''};
+<% if(table.isTreeEntity){ %>
+
+<% }else{ %>
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+<% } %>
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import org.tangdao.common.config.Global;
+import org.tangdao.common.suports.BaseController;
+import org.tangdao.common.collect.ListUtils;
+import org.tangdao.common.collect.MapUtils;
+import org.tangdao.common.lang.StringUtils;
+
+import ${packageName}.${moduleName}.model.domain${isNotEmpty(subModuleName)?'.'+subModuleName:''}.${ClassName};
+import ${packageName}.${moduleName}.service${isNotEmpty(subModuleName)?'.'+subModuleName:''}.I${ClassName}Service;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+<% if(!table.isTreeEntity){ %>
+import com.baomidou.mybatisplus.core.metadata.IPage;
+<% } %>
+
+/**
+ * ${functionName}Controller
+ * @author ${functionAuthor}
+ * @version ${functionVersion}
+ */
+@Controller
+@RequestMapping(value = "\${adminPath}/${urlPrefix}")
+public class ${ClassName}Controller extends BaseController {
+
+	@Autowired
+	private I${ClassName}Service ${className}Service;
+	
+	/**
+	 * 获取数据
+	 */
+	@ModelAttribute
+	public ${ClassName} get(<% for(pk in table.pkList){ %>${pkLP.index!=1?', ':''}${pk.simpleJavaType} ${pk.simpleJavaField}<% } %>, boolean isNewRecord) {
+		<% if (table.pkList.~size == 1){ %>
+		return ${className}Service.get(<% for(pk in table.pkList){ %>${pkLP.index!=1?', ':''}${pk.simpleJavaField}<% } %>, isNewRecord);
+		<% }else{ %>
+		return ${className}Service.get(new Class<?>[]{<% for(pk in table.pkList){ %>${pkLP.index!=1?', ':''}${pk.simpleJavaType}.class<% } %>},
+				new Object[]{<% for(pk in table.pkList){ %>${pkLP.index!=1?', ':''}${pk.simpleJavaField}<% } %>}, isNewRecord);
+		<% } %>
+	}
+	
+	/**
+	 * 查询列表
+	 */
+	@PreAuthorize("hasAuthority('${permissionPrefix}:view')")
+	@RequestMapping(value = {"list", ""})
+	public String list(${ClassName} ${className}, Model model) {
+		model.addAttribute("${className}", ${className});
+		return "${lastPackageName}/${viewPrefix}List";
+	}
+	
+	/**
+	 * 查询列表数据
+	 */
+	@PreAuthorize("hasAuthority('${permissionPrefix}:view')")
+	@RequestMapping(value = "listData")
+	<% if(table.isTreeEntity){ %>
+	public @ResponseBody List<${ClassName}> listData(${ClassName} ${className}) {
+		QueryWrapper<${ClassName}> queryWrapper = new QueryWrapper<${ClassName}>();
+		return ${className}Service.select(queryWrapper);
+	}
+	<% }else{ %>
+	public @ResponseBody IPage<${ClassName}> listData(${ClassName} ${className}, HttpServletRequest request, HttpServletResponse response) {
+		QueryWrapper<${ClassName}> queryWrapper = new QueryWrapper<${ClassName}>();
+		return ${className}Service.page(${className}.getPage(), queryWrapper);
+	}
+	<% } %>
+
+	/**
+	 * 查看编辑表单
+	 */
+	@PreAuthorize("hasAuthority('${permissionPrefix}:view')")
+	@RequestMapping(value = "form")
+	public String form(${ClassName} ${className}, Model model) {
+		<% if(table.isTreeEntity){ %>
+		if (StringUtils.isNotBlank(${className}.getParentCode())) {
+			${className}.setParent(${className}Service.get(${className}.getParentCode()));
+		}
+		if (${className}.getParent() == null) {
+			${className}.setParent(new ${ClassName}(${ClassName}.ROOT_CODE));
+		}
+		<%}%>
+		model.addAttribute("${className}", ${className});
+		return "${lastPackageName}/${viewPrefix}Form";
+	}
+
+	/**
+	 * 保存${functionNameSimple}
+	 */
+	@PreAuthorize("hasAuthority('${permissionPrefix}:edit')")
+	@PostMapping(value = "save")
+	public @ResponseBody String save(@Validated ${ClassName} ${className}) {
+		${className}Service.saveOrUpdate(${className});
+		return renderResult(Global.TRUE, "保存成功！");
+	}
+	<% if(@ObjectUtils.toBoolean(table.optionMap['isHaveDisableEnable'])){ %>
+	
+	/**
+	 * 停用${functionNameSimple}
+	 */
+	@PreAuthorize("hasAuthority('${permissionPrefix}:edit')")
+	@RequestMapping(value = "disable")
+	public @ResponseBody String disable(${ClassName} ${className}) {
+		<% if(table.isTreeEntity){ %>
+		QueryWrapper<${ClassName}> queryWrapper = new QueryWrapper<${ClassName}>();
+		queryWrapper.eq("status",${ClassName}.STATUS_NORMAL);
+		<%for(c in table.columnList){if(c.isPk=='1'){%>
+		queryWrapper.like("${c.columnName}","," + ${className}.get${@StringUtils.cap(c.simpleJavaField)}() + ",");
+		<%}}%>
+		long count = ${className}Service.count(queryWrapper);
+		if (count > 0) {
+			return renderResult(Global.FALSE, "该${functionNameSimple}包含未停用的子${functionNameSimple}！");
+		}
+		<% } %>
+		${className}.setStatus(${ClassName}.STATUS_DISABLE);
+		${className}Service.updateById(${className});
+		return renderResult(Global.TRUE, "停用成功");
+	}
+	
+	/**
+	 * 启用${functionNameSimple}
+	 */
+	@PreAuthorize("hasAuthority('${permissionPrefix}:edit')")
+	@RequestMapping(value = "enable")
+	public @ResponseBody String enable(${ClassName} ${className}) {
+		${className}.setStatus(${ClassName}.STATUS_NORMAL);
+		${className}Service.updateById(${className});
+		return renderResult(Global.TRUE, "启用成功");
+	}
+	<% } %>
+	<% if(@ObjectUtils.toBoolean(table.optionMap['isHaveDelete'])){ %>
+	
+	/**
+	 * 删除${functionNameSimple}
+	 */
+	@PreAuthorize("hasAuthority('${permissionPrefix}:edit')")
+	@RequestMapping(value = "delete")
+	public @ResponseBody String delete(${ClassName} ${className}) {
+		${className}Service.deleteById(${className});
+		return renderResult(Global.TRUE, "删除成功！");
+	}
+	<% } %>
+	<% if(table.isTreeEntity){ %>
+	
+	/**
+	 * 获取树结构数据
+	 * @param excludeCode 排除的Code
+	 * @param isShowCode 是否显示编码（true or 1：显示在左侧；2：显示在右侧；false or null：不显示）
+	 * @return
+	 */
+	@RequestMapping(value = "treeData")
+	public @ResponseBody List<Map<String, Object>> treeData(String excludeCode, String isShowCode) {
+		QueryWrapper<${ClassName}> queryWrapper = new QueryWrapper<${ClassName}>();
+		if (StringUtils.isNotBlank(excludeCode)) {
+		<%
+			for(c in table.columnList){
+			if(c.isPk=='1'){
+			%>
+			queryWrapper.ne("${c.columnName}", excludeCode);
+		<%  }}%>
+			queryWrapper.notLike("parent_codes", excludeCode);
+		}
+		queryWrapper.ne("status", ${ClassName}.STATUS_DELETE);
+		
+		queryWrapper.orderByAsc("tree_sort");
+		List<${ClassName}> sourceList = ${className}Service.select(queryWrapper);
+		List<Map<String, Object>> targetList = ListUtils.newArrayList();
+		Map<String, Object> tempMap = null;
+		for (${ClassName} ${className} : sourceList) {
+			// 过滤被排除的编码（包括所有子级）
+			if (StringUtils.isNotEmpty(excludeCode)){
+				if (${className}.get${ClassName}Code().equals(excludeCode)){
+					continue;
+				}
+				if (${className}.getParentCodes().contains("," + excludeCode + ",")){
+					continue;
+				}
+			}
+		
+			tempMap = MapUtils.newHashMap();
+			tempMap.put("id", ${className}.get${ClassName}Code());
+			tempMap.put("pId", ${className}.getParentCode());
+			tempMap.put("name", ${className}.get${ClassName}Name());
+			targetList.add(tempMap);
+		}
+		return targetList;
+	}
+	<% } %>
+	
+}]]>
+	</content>
+</template>

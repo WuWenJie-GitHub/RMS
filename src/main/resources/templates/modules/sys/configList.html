@@ -1,0 +1,73 @@
+<% layout('/layouts/default.html', {title: '参数设置', libs: ['dataGrid']}){ %>
+<div class="card bd-0">
+    <div class="card-header d-flex align-items-start justify-content-between box-header">
+      <div class="pt-1">参数设置</div>
+      <div class="d-flex">
+          <button type="button" id="btnSearch" title="查询" class="btn btn-xs btn-default"><i  class="fa fa-filter"></i>查询</button>
+          <% if(expIf("hasAuthority('sys:config:edit')")){ %>
+          <button type="button" href="${ctx}/sys/config/form" class="btn btn-xs btn-primary mg-l-10 btnTool" title="新增角色"><i  class="fa fa-plus"></i>新增</button>
+          <button type="button" class="btn btn-xs btn-primary mg-l-10" id="btnUpdateCache" title="清理全部缓存，包括属性文件的配置"><i class="fa fa-redo-alt"></i> 清理全部缓存</button>
+          <% } %>
+      </div>
+    </div>
+    <div class="card-body pd-10">
+      <#form:form id="searchForm" model="${config}" action="${ctx}/sys/config/listData" method="post"  class="form-horizontal"
+				data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+        <div class="form-group">
+          <div class="input-group wd-250">
+            <div class="input-group-prepend">
+              <span class="input-group-text">参数名称</span>
+            </div>
+            <#form:input path="configName" class="form-control" />
+          </div>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary btn-sm">查询</button>
+          <button type="reset" class="btn btn-default btn-sm">重置</button>
+        </div>
+      </#form:form>
+      <table id="dataGrid"></table>
+      <div id="dataGridPage"></div>
+    </div>
+  </div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [ 
+		{header:'参数名称', name:'configName', index:'config_name', width:200, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/sys/config/form?id='+row.id+'" class="btnList" data-title="编辑参数">'+val+'</a>';
+		}},
+		{header:'参数键名', name:'configKey', index:'config_key', width:200},
+		{header:'参数键值', name:'configValue', sortable:false, width:200, classes:"nowrap"},
+		{header:'操作', name:'actions', width:100, fixed:true, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(expIf("hasAuthority('sys:config:edit')")){ %>
+				actions.push('<a href="${ctx}/sys/config/form?id='+row.id+'" class="btnList" title="编辑参数"><i class="la la-edit"></i></a>&nbsp;');
+				actions.push('<a href="${ctx}/sys/config/delete?id='+row.id+'" class="btnList" title="删除参数" data-confirm="确认要删除该参数吗？"><i class="la la-trash"></i></a>&nbsp;');
+// 				actions.push('<a href="javascript:" class="btnMore" title="更多操作"><i class="fa fa-chevron-circle-right"></i></a>&nbsp;');
+// 				actions.push('<div class="moreItems">');
+// 				actions.push('<a href="${ctx}/sys/config/form?id='+row.id+'" class="btn btn-default btn-xs btnList" title="编辑参数"><i class="fa fa-pencil"></i> 编辑参数</a>&nbsp;');
+// 				actions.push('<a href="${ctx}/sys/config/form?id='+row.id+'" class="btn btn-default btn-xs btnList" title="编辑参数"><i class="fa fa-pencil"></i> 编辑参数</a>&nbsp;');
+// 				actions.push('<a href="${ctx}/sys/config/form?id='+row.id+'" class="btn btn-default btn-xs btnList" title="编辑参数"><i class="fa fa-pencil"></i> 编辑参数</a>&nbsp;');
+// 				actions.push('</div>');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+
+// 更新平台中的全部缓存，包含属性配置文件。
+$("#btnUpdateCache").click(function(){ 
+	js.ajaxSubmit("${ctx}/sys/cache/clearAll", function(data){
+		js.showMessage(datmessage);
+	});
+	return false;
+});
+</script>
+</body></html>

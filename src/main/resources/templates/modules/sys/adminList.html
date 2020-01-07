@@ -1,0 +1,69 @@
+<% layout('/layouts/default.html', {title: '系统管理员', libs: ['dataGrid']}){ %>
+<div class="card bd-0">
+    <div class="card-header d-flex align-items-start justify-content-between box-header">
+      <div class="pt-1">管理员列表</div>
+      <div class="d-flex">
+          <button type="button" id="btnSearch" title="查询" class="btn btn-xs btn-default"><i  class="fa fa-filter"></i>查询</button>
+          <button type="button" href="${ctx}/sys/admin/form?op=add" class="btn btn-xs btn-primary mg-l-10 btnTool" title="新增管理员"><i  class="fa fa-plus"></i>新增</button>
+      </div>
+    </div>
+    <div class="card-body pd-10">
+      <#form:form id="searchForm" model="${user}" action="${ctx}/sys/admin/listData" method="post"  class="form-horizontal"
+				data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+        <div class="form-group">
+          <div class="input-group wd-250">
+            <div class="input-group-prepend">
+              <span class="input-group-text">登录账号</span>
+            </div>
+            <#form:input name="username" class="form-control" />
+          </div>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary btn-sm">查询</button>
+          <button type="reset" class="btn btn-default btn-sm">重置</button>
+        </div>
+      </#form:form>
+      <table id="dataGrid"></table>
+      <div id="dataGridPage"></div>
+    </div>
+  </div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'登录账号', name:'username', index:'username', width:200, align:"center", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/sys/admin/form?userCode='+row.userCode+'&op=edit" class="btnList" data-title="编辑用户">'+(val||row.id)+'</a>';
+		}},
+		{header:'用户昵称', name:'nickname', index:'nickname', width:200, align:"center"},
+		{header:'电子邮箱', name:'email', index:'email', width:200, align:"center"},
+		{header:'手机号码', name:'mobile', index:'mobile', width:200, align:"center"},
+		{header:'办公电话', name:'phone', index:'phone', width:200, align:"center"},
+		{header:'更新时间', name:'updateTime', index:'update_time', width:200, align:"center"},
+		{header:'状态', name:'status', index:'status', width:140, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('sys_status')}, val, '未知', true);
+		}},
+		{header:'操作', name:'actions', width:130, fixed:true,  sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+				actions.push('<a href="${ctx}/sys/admin/form?userCode='+row.userCode+'&op=edit" class="btnList" title="编辑用户"><i class="la la-edit"></i></a>&nbsp;');
+				if (row.status == Global.STATUS_NORMAL){
+					actions.push('<a href="${ctx}/sys/admin/disable?userCode='+row.userCode+'" class="btnList" title="停用用户" data-confirm="确认要停用该用户吗？"><i class="la la-minus-circle"></i></a>&nbsp;');
+				}
+				if (row.status == Global.STATUS_DISABLE){
+					actions.push('<a href="${ctx}/sys/admin/enable?userCode='+row.userCode+'" class="btnList" title="启用用户" data-confirm="确认要启用该用户吗？"><i class="la la-check-circle"></i></a>&nbsp;');
+				}
+				actions.push('<a href="${ctx}/sys/admin/delete?userCode='+row.userCode+'" class="btnList" title="删除用户" data-confirm="确认要删除该用户吗？"><i class="la la-trash"></i></a>&nbsp;');
+				actions.push('<a href="${ctx}/sys/admin/resetpwd?userCode='+row.userCode+'" class="btnList"  title="用户密码重置" data-confirm="确认要将该用户密码重置到初始状态吗？"><i class="la la-shield"></i></a>&nbsp;');
+			actions.push('</div>');
+			
+			return actions.join('');
+		}}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>
+</body></html>

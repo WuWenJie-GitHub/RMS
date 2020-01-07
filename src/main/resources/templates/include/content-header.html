@@ -1,0 +1,92 @@
+<div class="content-header navbar-header">
+<nav class="navbar-right">
+    	<div class="nav-link" >
+            <a href="javascript:;" class="nav-icon">
+                <i data-feather="archive"></i>
+            </a>
+        </div>
+    	<div class="nav-link">
+            <a href="javascript:;" onclick="openOffCanvas_test2(null,[],null,true);" class="nav-icon" title="主题切换" >
+                <i data-feather="moon"></i>
+            </a>
+        </div><!-- dropdown -->
+        <div class="nav-link dropdown dropdown-notification">
+            <a href="javascript:;" class="new-indicator nav-icon" data-toggle="dropdown" data-hover="dropdown">
+                <i data-feather="bell"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right">
+                <div class="dropdown-header">Notifications</div>
+                <a href="javascript:;" class="dropdown-item">
+                    <div class="media">
+                        <div class="avatar avatar-sm avatar-online"><img src="${ctxStatic}/images/img15.png"
+                                class="rounded-circle" alt=""></div>
+                        <div class="media-body mg-l-15">
+                            <p>Congratulate <strong>Socrates Itumay</strong> for work anniversaries</p>
+                            <span>Mar 15 12:32pm</span>
+                        </div><!-- media-body -->
+                    </div><!-- media -->
+                </a>
+                <div class="dropdown-footer"><a href="javascript:;">View all Notifications</a></div>
+            </div><!-- dropdown-menu -->
+        </div><!-- dropdown -->
+        <div class="nav-link dropdown dropdown-profile mg-l-10">
+            <a href="javascript:;" class="dropdown-link dropdown-avatar" data-toggle="dropdown" data-hover="dropdown">
+                <div class="avatar avatar-sm"><img src="${ctxStatic+user.avatar!'/images/user1.jpg'}" class="rounded-circle" alt=""></div>
+            </a><!-- dropdown-link -->
+            <div class="dropdown-menu dropdown-menu-right">
+                <h6 class="tx-semibold mg-b-5 mg-t-10">${user.nickname!user.username}</h6>
+                <p class="mg-b-20 tx-12 tx-color-03">${user.email!user.mobile}</p>
+
+                <a href="javascript:;" data-href="${ctx}/userinfo/profile" data-title="用户信息" class="dropdown-item addTabPage"><i data-feather="user"></i> 我的信息</a>
+                <!-- <a href="javascript:;" data-href="${ctx}/userinfo" data-title="用户信息" class="dropdown-item addTabPage"><i data-feather="help-circle"></i> 帮助中心</a>
+                <a href="javascript:;" data-href="${ctx}/userinfo" data-title="用户信息" class="dropdown-item addTabPage"><i data-feather="life-buoy"></i> 活动</a> -->
+                <a href="javascript:;" onclick="openOffCanvas_test2(null,[],null,true);" class="dropdown-item"><i data-feather="settings"></i>账户设置</a>
+                <a href="${ctx}/logout" class="dropdown-item"><i data-feather="log-out"></i>退出</a>
+            </div><!-- dropdown-menu -->
+        </div><!-- dropdown -->
+        <!-- <a href="javascript:;" class="nav-link"><i data-feather="bell"></i></a> -->
+    </nav>
+</div><!-- content-header -->
+<#form:offcanvas id="test2">
+<div class="df-settings">
+  <div class="df-settings-body">
+    <div class="pd-y-20">
+      <h3 class="tx-bold tx-spacing--2 tx-brand-02 mg-b-0">主题<span class="tx-normal tx-primary">自定义</span></h3>
+      <span class="tx-sans tx-9 tx-uppercase tx-semibold tx-spacing-1 tx-color-03">Template Skin Customizer</span>
+    </div>
+
+    <div class="pd-y-20 bd-t">
+      <label class="tx-sans tx-10 tx-uppercase tx-bold tx-spacing-1 tx-color-02 mg-b-15">Skin Mode</label>
+      <div class="row row-xs">
+      	<% var themeName = @ConfigUtils.getSkinValue(); %>
+        <div class="col-4">
+          <a href="${ctx}/skinswitch?value=default" class="df-mode df-mode-default <% if(themeName=='default'){ %>active<%}%>" data-title="classic"></a>
+          <span class="df-skin-name">Classic</span>
+        </div>
+        <div class="col-4">
+          <a href="javascript:;" class="df-mode df-mode-light disabled" data-title="light">
+            <span class="bg-ui-01"></span>
+            <span class="bg-ui-02"></span>
+          </a>
+          <span class="df-skin-name">Light <span class="tx-normal">(Coming Soon)</span></span>
+        </div>
+        <div class="col-4">
+          <a href="javascript:;" class="df-mode df-mode-cold disabled" data-title="cool">
+            <span class="bg-primary op-1"></span>
+            <span class="bg-primary op-2"></span>
+          </a>
+          <span class="df-skin-name">Cool <span class="tx-normal">(Coming Soon)</span></span>
+        </div>
+        <div class="col-4 mg-t-15">
+          <a href="${ctx}/skinswitch?value=charcoal" class="df-mode df-mode-dark <% if(themeName=='charcoal'){ %>active<%}%>" data-title="dark">
+            <span class="bg-gray-700"></span>
+            <span class="bg-gray-900"></span>
+          </a>
+          <span class="df-skin-name tx-nowrap">Dark </span>
+        </div>
+      </div><!-- row -->
+    </div>
+
+  </div><!-- df-settings-body -->
+</div><!-- df-settings -->
+</#form:offcanvas>

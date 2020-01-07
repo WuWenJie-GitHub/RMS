@@ -1,0 +1,140 @@
+<% layout("/layouts/default.html",{libs: ['zTree']}){ %>
+<div style="height: 100%;position: relative;overflow-x: hidden;overflow-y: auto;">
+	<div id="inputForm" class="pd-10">
+		<div class="form-group mg-b-0-f">
+			<div class="input-group">
+				<input type="text" class="form-control empty" id="keyword" maxlength="50"/>
+				<div class="input-group-append">
+					<button class="btn btn-default" id="btn" onclick="searchNode()"> 搜索 </button>
+         		</div>
+			</div>
+		</div>
+	</div>
+	<div class="treeExpandCollapse" style="display:none;">
+		<a href="javascript:" onclick="tree.expandAll(true);">展开</a> /
+		<a href="javascript:" onclick="tree.expandAll(false);">折叠</a>
+	</div>
+	<div id="tree" class="ztree treeselect pd-l-10-f"></div>
+</div>
+<script>
+var setting = {
+	view:{selectedMulti:false,dblClickExpand:false},
+	check:{enable:"${checkbox}"=="true",nocheckInherit:true},
+	data:{simpleData:{enable:true}},callback:{
+		onClick:function(event, treeId, treeNode){
+			tree.expandNode(treeNode);
+		},
+		onDblClick: function(){
+			js.layer.$('#' + window.name).closest('.layui-layer')
+			.find(".layui-layer-btn0").trigger("click");
+		},
+		onAsyncSuccess: function(event, treeId, treeNode, msg){
+			selectCheckNode(selectCodes, treeNode);
+		}
+	}
+}, tree, loadTree = function(){
+	$.get("${url}&t=" + new Date().getTime(), function(zNodes){
+		tree = $.fn.zTree.init($("#tree"), setting, zNodes);//.expandAll(true);
+		var nodes = tree.getNodesByParam("level", 0);
+		for(var i=0, l=nodes.length; i<l; i++) {
+			if (nodes[i].children && nodes[i].children.length > 0){
+				$('.treeExpandCollapse').show();
+				break;
+			}
+		}
+		$.fn.zTree.expandNodeByLevel(tree, -1);
+		if (zNodes && zNodes.length > 0){
+			var selectIds = "${selectIds}".split(",");
+			selectCheckNode(selectIds);
+		}
+	});
+};loadTree();
+function selectCheckNode(selectIds){
+	for(var i=0; i<selectIds.length; i++) {
+		var isLoadUser = false;
+		var node = tree.getNodeByParam("${isReturnValue!}"=='true'?'value':'id', (isLoadUser?"u_":"") + selectIds[i]);
+		if("${isReturnValue!}" == "true"){
+			try{tree.checkNode(node, true, false);}catch(e){}
+			tree.selectNode(node, false);
+		}else{
+			tree.selectNode(node, true);
+		}
+	}
+}
+var lastValue = "", nodeList = [], key = $("#keyword");
+key.bind("focus", focusKey).bind("blur", blurKey).bind("change cut input propertychange", searchNode);
+key.bind("keydown", function (e){if(e.which == 13){searchNode();}});
+
+
+function focusKey(e) {
+	if (key.hasClass("empty")) {
+		key.removeClass("empty");
+	}
+}
+function blurKey(e) {
+	if (key.get(0).value === "") {
+		key.addClass("empty");
+	}
+	searchNode(e);
+}
+function searchNode() {
+	var value = $.trim(key.get(0).value);
+	var keyType = "name";
+	if (lastValue === value) {
+		return;
+	}
+	lastValue = value;
+	var nodes = tree.getNodes();
+	if (value == "") {
+		showAllNode(nodes);
+		return;
+	}
+	hideAllNode(nodes);
+	nodeList = tree.getNodesByParamFuzzy(keyType, value);
+	updateNodes(nodeList);
+}
+function hideAllNode(nodes){			
+	nodes = tree.transformToArray(nodes);
+	for(var i=nodes.length-1; i>=0; i--) {
+		tree.hideNode(nodes[i]);
+	}
+}
+function showAllNode(nodes){			
+	nodes = tree.transformToArray(nodes);
+	for(var i=nodes.length-1; i>=0; i--) {
+		if(nodes[i].getParentNode()!=null){
+			tree.expandNode(nodes[i],false,false,false,false);
+		}else{
+			tree.expandNode(nodes[i],true,true,false,false);
+		}
+		tree.showNode(nodes[i]);
+		showAllNode(nodes[i].children);
+	}
+}
+function updateNodes(nodeList) {
+	tree.showNodes(nodeList);
+	for(var i=0, l=nodeList.length; i<l; i++) {
+		var treeNode = nodeList[i];
+		showChildren(treeNode);
+		showParent(treeNode)
+	}
+}
+function showChildren(treeNode){
+	if (treeNode.isParent){
+		for(var idx in treeNode.children){
+			var node = treeNode.children[idx];
+			tree.showNode(node);
+			showChildren(node);
+		}
+	}
+}
+function showParent(treeNode){
+	var parentNode;
+	while((parentNode = treeNode.getParentNode()) != null){
+		tree.showNode(parentNode);
+		tree.expandNode(parentNode, true, false, false);
+		treeNode = parentNode;
+	}
+}
+</script>
+<% } %>

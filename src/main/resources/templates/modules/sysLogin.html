@@ -1,0 +1,76 @@
+<% layout('/layouts/default.html', {title: '登录', libs: ['validate'], bodyClass: 'login-page'}){ %>
+<link rel="stylesheet" href="${ctxStatic}/css/tangdao.auth.css">
+
+    <div class="content content-fixed content-auth">
+        <div class="container">
+            <div class="media align-items-stretch justify-content-center pos-relative">
+                <div class="media-body align-items-center d-none d-lg-flex">
+                    <div class="mx-wd-600">
+                        <img src="${ctxStatic}/images/img15.png" class="img-fluid" alt="">
+                    </div>
+                </div><!-- media-body -->
+                <div class="sign-wrapper mg-lg-l-50 mg-xl-l-60">
+                    <div class="wd-100p">
+                        <h3 class="tx-color-01 mg-b-5">安全登录</h3>
+                        <p class="tx-color-03 tx-16 mg-b-40">欢迎回来！请登陆后继续访问。</p>
+                        <% if ((parameter!=null)&&(parameter.error=='true')){ %>
+						<div class="alert alert-danger fade show" role="alert">
+							认证失败，请确认输入的信息是否正确。
+						</div>
+						<% } %>
+						<#form:form id="inputForm1" model="${user!}" action="${ctx}/login" method="POST" >
+	                        <div class="form-group has-feedback">
+	                            <label>账号信息 <span class="tx-danger">*</span></label>
+	                            <#form:input name="username" class="form-control required" placeholder="会员名称、邮箱、手机号"  value="system"/>
+	                        </div>
+	                        <div class="form-group has-feedback">
+	                            <div class="d-flex justify-content-between mg-b-5">
+	                                <label class="mg-b-0-f">密码 <span class="tx-danger">*</span></label>
+	                                <a href="javascript:;" class="tx-13">忘记密码?</a>
+	                            </div>
+	                             <#form:input type="password" name="password" class="form-control required" value="admin"/>
+	                        </div>
+	                        <div class="form-group has-feedback mg-b-25">
+	                             <label>验证码 <span class="tx-danger">*</span></label>
+	                             <div class="input-group">
+	                             	<#form:input type="text" name="validCode" class="form-control required"/>
+	                             	 <div class="input-group-append input-group-append-validCode">
+	                             	 	<img id="validCodeImg" title="看不清，点击图片刷新" alt="验证码" />
+	                             	 </div>
+	                             </div>
+	                        </div>
+	                        <button type="submit" class="btn btn-brand-02 btn-block ">登 录</button>
+	                        <div class="tx-13 mg-t-20 tx-center">还没有登录账号？ <a href="javascript:;">创建账号</a></div>
+	                        <div class="tx-13 mg-t-20">
+	                        	 <a href="javascript:;" class=""><i class="fab fa-github"></i></a>
+	                        </div>
+                        </#form:form>
+                    </div>
+                </div><!-- sign-wrapper -->
+            </div><!-- media -->
+        </div><!-- container -->
+    </div><!-- content -->
+    <% include('/include/footer.html'){} %>
+<% } %>
+<script>
+$("#inputForm1").validate({
+    submitHandler: function (form) {
+        form.submit();
+    }
+});
+$('#validCodeImg').click(function() {
+	var src = '${ctxPath}/validCode?' + new Date().getTime();
+	$(this).attr('src', src).removeClass('hide');
+	$('#validCode').val('');
+});
+$('#validCode').focus(function() {
+	if ($('#validCodeImg').attr('src') == '') {
+		$('#validCodeImg').click();
+	}
+});
+setTimeout(function() {
+	$('#validCodeImg').click();
+}, 1000);
+</script>
+</body>
+</html>

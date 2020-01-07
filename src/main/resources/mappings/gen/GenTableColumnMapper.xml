@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.tangdao.modules.gen.mapper.GenTableColumnMapper">
+
+    <sql id="genTableColumnColumns">
+		a.*,
+		b.table_name AS "genTable.tableName",
+		b.comments AS "genTable.comments",
+		b.class_name AS "genTable.className",
+		b.parent_table AS "genTable.parentTable",
+		b.parent_table_fk AS "genTable.parentTableFk"
+	</sql>
+	
+	<sql id="genTableColumnJoins">
+		JOIN gen_table b ON b.table_name = a.table_name
+    </sql>
+    
+	<select id="findList" resultType="org.tangdao.modules.gen.model.domain.GenTableColumn">
+		SELECT 
+			<include refid="genTableColumnColumns"/>
+		FROM gen_table_column a
+		<include refid="genTableColumnJoins"/>
+		WHERE a.status = #{STATUS_NORMAL} 
+		<if test="genTable != null and genTable.tableName != null and genTable.tableName != ''">
+			AND a.table_name = #{genTable.tableName}
+		</if>
+		ORDER BY a.column_sort ASC
+	</select>
+</mapper>

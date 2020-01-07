@@ -1,0 +1,116 @@
+<% layout('/layouts/default.html', {title: '日志详情', libs: ['validate']}){ %>
+<div class="card bd-0">
+    <div class="card-header d-flex align-items-start justify-content-between box-header fixed">
+        <div class="pt-1">日志详情</div>
+        <div class="d-flex">
+        </div>
+    </div>
+    <#form:form id="inputForm" model="${log}" action="${ctx}/sys/log/save" method="post">
+    	<#form:hidden path="id" />
+        <div class="card-body card-content-fixed pd-sm-t-30 pd-sm-b-40 pd-sm-x-30">
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="parentCode">日志标题</label>
+                    <#form:input path="logTitle" maxlength="500" class="form-control required "/>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="menuType">日志类型</label>
+	                <#form:input path="logType" maxlength="100" class="form-control required" />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label for="parentCode">请求地址</label>
+                    <div class="input-group">
+                    	<div class="input-group-prepend">
+			              <span class="input-group-text">${log.serverAddr}</span>
+			            </div>
+                    	<#form:input value="${log.requestUri}" maxlength="255" class="form-control "/>
+                    	<div class="input-group-append">
+			              <span class="input-group-text">${log.requestMethod}</span>
+			            </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label for="parentCode">提交的数据</label>
+                    <div class="input-group">
+                    	<#form:textarea path="requestParams" rows="1" class="form-control "/>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="parentCode">操作用户</label>
+                    <#form:input path="createByName" maxlength="500" class="form-control required "/>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="menuType">操作账号</label>
+	                <#form:input path="createBy" maxlength="100" class="form-control required" />
+                </div>
+            </div>
+            <% if(@Global.YES.equals(log.isException)){ %>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label for="parentCode">异常信息</label>
+                    <div class="input-group">
+                    	<#form:textarea path="exceptionInfo" rows="10" class="form-control "/>
+                    </div>
+                </div>
+            </div>
+            <% } %>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="parentCode">业务类型</label>
+                    <#form:input path="bizType" maxlength="64" class="form-control "/>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="menuType">业务主键</label>
+	                <#form:input path="bizKey" maxlength="64" class="form-control "/>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="parentCode">操作时间</label>
+                    <#form:input path="createDate" class="form-control required "/>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="menuType">客户端地址</label>
+	                <#form:input path="remoteAddr" maxlength="255" class="form-control required "/>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label for="parentCode">用户代理</label>
+                    <#form:input path="userAgent" maxlength="500" class="form-control "/>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="parentCode">设备名称</label>
+                    <#form:input path="deviceName" maxlength="100" class="form-control "/>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="menuType">浏览器名称</label>
+	                <#form:input path="browserName" maxlength="100" class="form-control "/>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <label for="parentCode">响应时间</label>
+                    <#form:input path="executeTimeFormat" maxlength="100" class="form-control "/>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer pd-sm-l-30">
+            <div class="row">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="button" class="btn btn-sm btn-default" onclick="js.closeCurrentTabPage()">关闭窗口</button>
+                </div>
+            </div>
+        </div>
+    </#form:form>
+</div>
+<% } %>
+</body></html>

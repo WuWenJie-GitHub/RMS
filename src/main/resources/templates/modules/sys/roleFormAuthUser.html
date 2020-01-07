@@ -1,0 +1,143 @@
+<% layout('/layouts/default.html', {title: '角色管理' , libs: ['dataGrid']}){ %>
+<div class="card bd-0">
+	<div class="card-header d-flex align-items-start justify-content-between box-header fixed">
+		<div class="pt-1 tx-bold pd-sm-l-20 pd-l-10">角色：${role.roleName}</div>
+		<div class="d-flex"></div>
+	</div>
+	<div class="form card-body pd-sm-t-30 pd-sm-b-40 pd-sm-x-30">
+	  <div class="row">
+		<div class="col-md-6">
+			<div class="card">
+			  <div class="card-header">角色信息</div>
+			  	<ul class="list-group">
+				  <li class="list-group-item bd-x-0">名称：<span class="tx-semibold ">${role.roleName}</span></li>
+				  <li class="list-group-item bd-x-0">编码：<span class="tx-semibold ">${role.roleCode}</span></li>
+				  <li class="list-group-item bd-x-0">排序：<span class="tx-semibold ">${role.roleSort}</span></li>
+				  <li class="list-group-item bd-x-0">用户类型：<span class="tx-semibold ">${role.userType}</span></li>
+				  <li class="list-group-item bd-x-0">数据范围：<span class="tx-semibold ">${role.dataScope}</span></li>
+				  <li class="list-group-item bd-x-0">描述：<span class="tx-semibold ">${role.remarks}</span></li>
+				  <li class="list-group-item bd-x-0">创建于：<span class="tx-semibold ">${role.createTime, dateFormat}</span></li>
+				  <li class="list-group-item bd-x-0 bd-b-0">创建人：<span class="tx-semibold ">${role.createBy}</span></li>
+				</ul>
+			</div>
+			<div class="card mg-t-20">
+			  <div class="card-header">项目<span class="badge badge-secondary pd-y-1 pd-x-3 mg-l-5">0</span></div>
+			  	<ul class="list-group">
+				  <li class="list-group-item bd-x-0 bd-b-0 tx-gray-500">暂无项目信息</li>
+				</ul>
+			</div>
+		</div>
+		<div class="col-md-6 mg-xs-t-20 mg-md-0">
+			<div class="card">
+			  <div class="card-header">向角色添加用户</div>
+			  	<ul class="list-group">
+				  <li class="list-group-item bd-x-0">
+				  	<#form:select multiple="true" name="search" items="${[]}"
+									itemLabel="id" itemValue="name" class="form-control noselect2"/>
+				  </li>
+				  <li class="list-group-item bd-x-0 bd-b-0">
+				  	<button type="button" class="btn btn-sm btn-primary" id="saveRoleUser">将用户添加到角色</button>
+				  </li>
+				</ul>
+			</div>
+			<div class="card mg-t-20">
+			  <div class="card-header"><span class="tx-semibold mg-r-5">${role.roleName}</span>角色成员<span class="badge badge-secondary pd-y-1 pd-x-3 mg-l-5" id="total">0</span></div>
+			  <div class="card-body pd-5">
+			  	<#form:form id="searchForm" model="${role}" action="${ctx}/sys/role/listUserData" method="post"  class="form-horizontal"
+						data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+		      <#form:hidden name="roleCode" value="${role.roleCode}" />
+		      </#form:form>
+			  <table id="dataGrid"></table>
+     		  <div id="dataGridPage"></div>
+			  </div>
+			</div>
+		</div>
+	  </div>
+	</div>
+</div>
+<% } %>
+<script>
+//初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'登录账号', name:'username', index:'username', width:200, align:"center", frozen:true},
+		{header:'用户昵称', name:'nickname', index:'nickname', width:200, align:"center"},
+		{header:'创建时间', name:'createTime', index:'create_time', width:200, align:"center"},
+		{header:'状态', name:'status', index:'status', width:140, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('sys_status')}, val, '未知', true);
+		}},
+		{header:'操作', name:'actions', width:60, align:"center", fixed:true,  sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+				actions.push('<a href="${ctx}/sys/role/deleteRoleUser?roleCode=${role.roleCode}&userCode='+row.userCode+'" class="btnList" title="解除用户" data-confirm="确认要解除该用户吗？">解除</a>&nbsp;');
+			actions.push('</div>');
+			return actions.join('');
+		}}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		$("#total").html(data.total);
+	}
+});
+$("#saveRoleUser").on("click",function(){
+	if($("#search").val()){
+		js.ajaxSubmit("${ctx}/sys/role/saveRoleUser",{
+			roleCode: "${role.roleCode}",
+			userCodes: $("#search").val().join(",")
+		}, function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				$('#dataGrid').trigger("reloadGrid");
+			}
+		}, "json");
+	}
+});
+$("#search").select2({
+    minimumResultsForSearch: 1,
+    width: '100%',
+    ajax: {
+    	url: "${ctx}/sys/user/listData",
+    	dataType: "json",
+    	delay: 250,
+    	data: function(params){
+    		return {
+    			username: params.term,
+    			nickname: params.term,
+    			userType: '${role.userType}',
+    			pageNo: params.page,
+    			pageSize: 20
+    		}
+    	},
+    	processResults: function(data, params){
+    		var results = new Array();
+    		 data.records.map(item=>{
+    			 results.push({id: item.userCode, ...item});
+    		 });
+    		return {
+    			results,
+    			pagination: {
+    				more: data.current < data.pages
+    			}
+    		}
+    	},
+    	cache: false
+    },
+    placeholder: "输入用户信息",
+    escapeMarkup: function(markUp){return markUp},
+    templateResult: function(rep){
+    	if(rep.nickname){
+	    	return "<b>"+rep.nickname+"</b><br/>@"+rep.username;	
+    	}
+    	return rep.username;
+    },
+    templateSelection: function(rep){
+    	if(rep.nickname){
+	    	return rep.nickname;	
+    	}
+    	return rep.username;
+    }
+    
+});
+</script>
+</body>
+</html>

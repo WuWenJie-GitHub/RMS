@@ -1,0 +1,96 @@
+<% layout('/layouts/default.html', {title: '公司管理', libs: ['dataGrid']}){ %>
+ <div class="card bd-0">
+    <div class="card-header d-flex align-items-start justify-content-between box-header">
+      <div class="pt-1">公司管理</div>
+      <div class="d-flex">
+          <button type="button" id="btnSearch" title="查询" class="btn btn-xs btn-default"><i class="fa fa-filter"></i>查询</button>
+          <button type="button" id="btnRefreshTree" class="btn btn-xs btn-default mg-l-10" title="刷新"><i class="fa fa-redo-alt"></i> 刷新</button>
+          <button type="button" id="btnExpandTreeNode" class="btn btn-xs btn-default mg-l-10" title="展开一级"><i class="fa fa-angle-double-down"></i> 展开</button>
+          <button type="button" id="btnCollapseTreeNode" class="btn btn-xs btn-default mg-l-10" title="折叠全部"><i class="fa fa-angle-double-up"></i> 折叠</button>
+          <% if(expIf("hasAuthority('sys:company:edit')")){ %>
+          <a href="${ctx}/sys/company/form" class="btn btn-xs btn-primary mg-l-10 btnTool" title="新增公司"><i class="fa fa-plus"></i>新增</a>
+          <% } %>
+      </div>
+    </div>
+    <div class="card-body pd-10">
+       <#form:form id="searchForm" model="${company}" action="${ctx}/sys/company/listData" method="post" class="form-horizontal"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+		<div class="form-group">
+			<div class="input-group wd-250">
+				<div class="input-group-prepend">
+					<span class="input-group-text">公司名称</span>
+         		</div>
+				<#form:input path="companyName" maxlength="200" class="form-control"/>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="input-group wd-250">
+				<div class="input-group-prepend">
+					<span class="input-group-text">公司代码</span>
+         		</div>
+				<#form:input path="viewCode" maxlength="100" class="form-control"/>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="input-group">
+				<div class="input-group-prepend">
+					<span class="input-group-text">状态</span>
+         		</div>
+         		<div class="wd-100">
+				<#form:select path="status" dictType="sys_search_status" blankOption="true" class="form-control select2"/>
+				</div>
+			</div>
+		</div>
+		<div class="form-group">
+			<button type="submit" class="btn btn-primary btn-sm">查询</button>
+			<button type="reset" class="btn btn-default btn-sm">重置</button>
+		</div>
+		</#form:form>
+		<table id="dataGrid"></table>
+    </div>
+  </div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'公司名称', name:'companyName', index:'company_name', width:250, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '( '+row.companyCode+' ) '+'<a href="${ctx}/sys/company/form?companyCode='+row.companyCode+'" class="btnList" data-title="编辑公司")}">'+(val||row.id)+'</a>';
+		}},
+		{header:'公司名称', name:'companyName', index:'company_name', width:150, align:"left"},
+		{header:'公司全称', name:'fullName', index:'full_name', width:150, align:"left"},
+		{header:'排序号', name:'treeSort', index:'tree_sort', width:150, align:"center"},
+		{header:'公司代码', name:'viewCode', index:'view_code', width:150, align:"left"},
+		{header:'区域编码', name:'areaCode', index:'area_code', width:150, align:"left"},
+		{header:'状态', name:'status', index:'status', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('sys_search_status')}, val, '未知}', true);
+		}},
+		{header:'更新时间', name:'updateTime', index:'update_time', width:150, align:"left"},
+		{header:'操作', name:'actions', width:130, fixed:true, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(expIf("hasAuthority('sys:company:edit')")){ %>
+				actions.push('<a href="${ctx}/sys/company/form?companyCode='+row.companyCode+'" class="btnList" title="编辑公司"><i class="la la-edit"></i></a>&nbsp;');
+				if (row.status == Global.STATUS_NORMAL){
+					actions.push('<a href="${ctx}/sys/company/disable?companyCode='+row.companyCode+'" class="btnList" title="停用公司" data-confirm="确认要停用该公司吗？")}"><i class="la la-minus-circle"></i></a>&nbsp;');
+				}
+				if (row.status == Global.STATUS_DISABLE){
+					actions.push('<a href="${ctx}/sys/company/enable?companyCode='+row.companyCode+'" class="btnList" title="启用公司" data-confirm="确认要启用该公司吗？")}"><i class="la la-check-circle"></i></a>&nbsp;');
+				}
+				actions.push('<a href="${ctx}/sys/company/delete?companyCode='+row.companyCode+'" class="btnList" title="删除公司" data-confirm="确认要删除该公司及所有子公司吗？")}" data-deltreenode="'+row.companyCode+'"><i class="la la-trash"></i></a>&nbsp;');
+				actions.push('<a href="${ctx}/sys/company/form?parentCode='+row.companyCode+'" class="btnList" title="新增下级公司"><i class="la la-plus-square"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+	dataId: 'companyCode',
+	treeGrid: true,			// 启用树结构表格
+	defaultExpandLevel: 0,	// 默认展开的层次
+	expandNodeClearPostData: 'companyName', // 展开节点清理请求参数数据（一般设置查询条件的字段属性，否则在查询后，不能展开子节点数据）
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>
+</body></html>

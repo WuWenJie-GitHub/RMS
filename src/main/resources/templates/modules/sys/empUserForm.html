@@ -1,0 +1,149 @@
+<% layout('/layouts/default.html', {title: '员工管理', libs: ['validate','dataGrid']}){ %>
+<div class="card bd-0">
+    <div class="card-header d-flex align-items-start justify-content-between box-header fixed">
+        <div class="pt-1">${empUser.isNewRecord ? '新增员工' : op == 'auth' ? '设置权限' : '编辑用户'}</div>
+        <div class="d-flex">
+
+        </div>
+    </div>
+    <#form:form id="inputForm" model="${empUser}" action="${ctx}/sys/empUser/save" method="post">
+    	<#form:hidden name="op" value="${op}"/>
+    	<#form:hidden path="userCode"/>
+    	<#form:hidden path="userType" value="employee"/>
+        <div class="card-body card-content-fixed pd-sm-t-30 pd-sm-b-40 pd-sm-x-30">
+        	<% if(op=='auth'){ %><br/><% } %>
+            <div class="form-row">
+	            <div class="form-group  col-md-6">
+	                <label>登录账号 <span class="tx-danger ">*</span></label>
+	                <#form:hidden name="oldUsername" value="${empUser.username}"/>
+	                <#form:input path="username" maxlength="10" readonly="${op=='auth'}" class="form-control required"/>
+	            </div>
+	            <div class="form-group  col-md-6">
+	                <label>用户昵称 <span class="tx-danger ">*</span></label>
+                	<#form:input path="nickname" maxlength="32" readonly="${op=='auth'}" class="form-control required "/>
+	            </div>
+            </div>
+            <div class="divider-text">${op == 'auth' ? '设置权限' : '详细信息'}</div>
+            <% if(op == 'add' || op == 'edit') { %>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label>归属机构 <span class="tx-danger ">*</span></label>
+                    <#form:treeselect title="归属机构"
+						id="office"
+						path="employee.officeCode"
+						labelPath="employee.officeName"
+						url="${ctx}/sys/office/treeData?excludeCode="
+						class="form-control" allowClear="true" canSelectRoot="true" canSelectParent="true"/>
+                </div>
+                <div class="form-group col-md-6">
+                    <label>归属公司</label>
+                    <#form:treeselect title="归属公司"
+						id="company" 
+						path="employee.companyCode" 
+						labelPath="employee.companyName"
+						url="${ctx}/sys/company/treeData?excludeCode="
+						class="form-control" allowClear="true" canSelectRoot="true" canSelectParent="true"/>
+                </div>
+            </div>
+            <div class="form-row">
+	            <div class="form-group  col-md-6">
+	                <label>电子邮箱</label>
+	               	<#form:input path="email" maxlength="300" class="form-control email"/>
+	            </div>
+	            <div class="form-group  col-md-6">
+	                <label>手机号码</label>
+                	<#form:input path="mobile" maxlength="100" class="form-control mobile"/>
+	            </div>
+            </div>
+            <div class="form-row">
+	            <div class="form-group  col-md-6">
+	                <label>办公电话</label>
+	               	<#form:input path="phone" maxlength="100" class="form-control phone"/>
+	            </div>
+	            <div class="form-group  col-md-6">
+	                <label>权重(排序)</label>
+                	<#form:input path="userWeight" maxlength="8" class="form-control digits" placeholder="权重越大排名越靠前，请填写数字。"/>
+	            </div>
+            </div>
+            <div class="form-row">
+	            <div class="form-group  col-md-6">
+	                <label>用户岗位</label>
+	               	<#form:select multiple="true" path="employee.postCodes" items="${postList}"
+									itemLabel="postName" itemValue="postCode" class="form-control select2"/>
+	            </div>
+	            <div class="form-group  col-md-6">
+	            </div>
+            </div>
+            <div class="form-group">
+                <label>备注</label>
+                 <#form:textarea path="remarks" class="form-control" row="5" placeholder="请输入" />
+            </div>
+            <% } %>
+            <% if(op == 'add' || op == 'auth') { %>
+            <div class="form-group">
+            	<label>角色选择</label>
+            	<table id="roleGrid"></table>
+				<#form:hidden name="roleCodeString"/>
+			</div>
+			<% } %>
+        </div>
+        <div class="card-footer pd-sm-l-30">
+            <div class="row">
+                <div class="col-sm-offset-2 col-sm-10">
+                	<% if(expIf("hasAuthority('sys:user:edit')")){ %>
+                    <button type="submit" class="btn btn-sm btn-primary">保存提交</button>
+                    <% } %>
+                    <button type="button" class="btn btn-sm btn-default" onclick="js.closeCurrentTabPage()">关闭窗口</button>
+                </div>
+            </div>
+        </div>
+    </#form:form>
+</div>
+<% } %>
+<script>
+<% if(op == 'add' || op == 'auth') {%>
+//加载角色列表
+var roleGrid = $("#roleGrid").dataGrid({
+	url: '${ctx}/sys/role/treeData',
+	postData: [
+		{name:'userType',value: $("#userType").val()}
+	],
+	columnModel: [
+		{header:'角色名称', name:'name', sortable:false, width:100, align:"center"},
+		{header:'角色编码', name:'id', sortable:false, width:100, align:"center"}  
+	],
+	showCheckbox: true,
+	autoGridHeight: function(){
+		return 'auto';
+	},
+	ajaxSuccess: function(){
+		<% for (role in empUser.roles!){ %>
+		roleGrid.dataGrid('setSelectRow', '${role.roleCode}');
+		<% } %>
+	}
+});
+$("#userType").on('change',function(e){
+	$("#roleGrid").jqGrid("setGridParam", {
+		postData: [
+			{name:'userType',value: $("#userType").val()}
+		]
+	}).trigger("reloadGrid");
+})
+<% } %>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		<% if(op == 'add' || op == 'auth') {%>
+		$("#roleCodeString").val(roleGrid.dataGrid('getSelectRows').join(','));
+		<% } %>
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				js.closeCurrentTabPage(function(contentWindow){
+					contentWindow.win.page();
+				});
+			}
+		}, "json");
+ }
+});
+</script>
+</body></html>

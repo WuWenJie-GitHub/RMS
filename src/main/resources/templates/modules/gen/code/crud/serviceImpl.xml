@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template>
+	<name>service</name>
+	<filePath>src/main/java/${packageName}/${moduleName}/service/impl/${subModuleName}</filePath>
+	<fileName>${ClassName}ServiceImpl.java</fileName>
+	<content><![CDATA[
+package ${packageName}.${moduleName}.service.impl${isNotEmpty(subModuleName)?'.'+subModuleName:''};
+
+<% if (table.childList.~size > 0){ %>
+import org.springframework.beans.factory.annotation.Autowired;
+<% } %>
+import org.springframework.stereotype.Service;
+
+import org.tangdao.common.service.impl.${table.isTreeEntity?'Tree':'Crud'}ServiceImpl;
+import ${packageName}.${moduleName}.service${isNotEmpty(subModuleName)?'.'+subModuleName:''}.I${ClassName}Service;
+import ${packageName}.${moduleName}.model.domain${isNotEmpty(subModuleName)?'.'+subModuleName:''}.${ClassName};
+import ${packageName}.${moduleName}.mapper${isNotEmpty(subModuleName)?'.'+subModuleName:''}.${ClassName}Mapper;
+
+/**
+ * ${functionName}ServiceImpl
+ * @author ${functionAuthor}
+ * @version ${functionVersion}
+ */
+@Service
+public class ${ClassName}ServiceImpl extends ${table.isTreeEntity?'Tree':'Crud'}ServiceImpl<${ClassName}Mapper, ${ClassName}> implements I${ClassName}Service{
+		
+}]]>
+	</content>
+</template>

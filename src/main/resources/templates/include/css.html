@@ -1,0 +1,26 @@
+<link rel="stylesheet" href="${ctxStatic}/vendors/@fortawesome/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="${ctxStatic}/vendors/line-awesome/css/line-awesome.css">
+<link rel="stylesheet" href="${ctxStatic}/vendors/select2/css/select2.min.css">
+<% if (@ListUtils.inString('layout', libs!)){ %>
+<link rel="stylesheet" href="${ctxStatic}/vendors/jquery.plugins/jquery.layout-latest.css">
+<% } %>
+<% if (@ListUtils.inString('validate', libs!)){ %>
+<link rel="stylesheet" href="${ctxStatic}/vendors/jquery.validation/1.16/jquery.validate.css">
+<% } %>
+<% if (@ListUtils.inString('tabPage', libs!)){ %>
+<link rel="stylesheet" href="${ctxStatic}/vendors/wdScrollTab/css/TabPanel.css">
+<% } %>
+<% if (@ListUtils.inString('dataGrid', libs!)){ %>
+<link rel="stylesheet" href="${ctxStatic}/vendors/jqGrid/4.7/css/ui.jqgrid.css">
+<% } %>
+<% if (@ListUtils.inString('zTree', libs!)){ %>
+<link rel="stylesheet" href="${ctxStatic}/vendors/jquery.ztree/3.5/css/metro/zTreeStyle.css">
+<% } %>
+<link rel="stylesheet" href="${ctxStatic}/css/tangdao.css">
+<% 
+var themeName = @ConfigUtils.getSkinValue();
+if(isNotEmpty(themeName)){
+ %>
+<link rel="stylesheet" href="${ctxStatic}/css/skin.${themeName}.css">
+<% } %>
+ 

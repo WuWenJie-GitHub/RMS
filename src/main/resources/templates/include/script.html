@@ -1,0 +1,23 @@
+<script src="${ctxStatic}/vendors.js"></script>
+<script src="${ctxStatic}/vendors/select2/js/select2.min.js"></script>
+<% if (@ListUtils.inString('layout', libs!)){ %>
+<script src="${ctxStatic}/vendors/jquery.plugins/jquery.layout-latest.js"></script>
+<% } %>
+<% if (@ListUtils.inString('validate', libs!)){ %>
+<script src="${ctxStatic}/vendors/jquery.validation/1.16/jquery.validate.js"></script>
+<script src="${ctxStatic}/vendors/jquery.validation/1.16/jquery.validate.extend.js"></script>
+<% } %>
+<% if (@ListUtils.inString('tabPage', libs!)){ %>
+<script src="${ctxStatic}/vendors/wdScrollTab/js/TabPanel.js"></script>
+<script src="${ctxStatic}/vendors/wdScrollTab/js/TabPanel.extend.js"></script>
+<% } %>
+<% if (@ListUtils.inString('dataGrid', libs!)){ %>
+<script src="${ctxStatic}/vendors/jqGrid/4.7/js/jquery.jqGrid.js"></script>
+<script src="${ctxStatic}/vendors/jqGrid/4.7/js/jquery.jqGrid.extend.js"></script>
+<% } %>
+<% if (@ListUtils.inString('zTree', libs!)){ %>
+<script src="${ctxStatic}/vendors/jquery.ztree/3.5/js/jquery.ztree.all-3.5.js"></script>
+<% } %>
+<script src="${ctxStatic}/vendors/layer/3.1/layer.js"></script>
+<script src="${ctxStatic}/vendors/my97/WdatePicker.js"></script>
+<script src="${ctxStatic}/tangdao.js"></script>

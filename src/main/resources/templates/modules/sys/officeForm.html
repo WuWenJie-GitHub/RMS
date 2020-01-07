@@ -1,0 +1,114 @@
+<% layout('/layouts/default.html', {title: '机构管理', libs: ['validate']}){ %>
+<div class="card bd-0">
+    <div class="card-header d-flex align-items-start justify-content-between box-header fixed">
+        <div class="pt-1">${office.isNewRecord ? '新增机构' : '编辑机构'}</div>
+        <div class="d-flex">
+        </div>
+    </div>
+    <#form:form id="inputForm" model="${office}" action="${ctx}/sys/office/save" method="post">
+    	<#form:hidden path="officeCode" />
+        <div class="card-body card-content-fixed pd-sm-t-30 pd-sm-b-40 pd-sm-x-30">
+			<div class="form-row">
+				<div class="form-group col-md-6">
+					<label>上级机构 <span class="tx-danger d-none">*</span></label>
+					<#form:treeselect 
+						id="parent" 
+						title="上级机构"
+						path="parent.officeCode" 
+						labelPath="parent.officeName"
+						url="${ctx}/sys/office/treeData?excludeCode=${office.officeCode}"
+						class="form-control" allowClear="true" canSelectRoot="true" canSelectParent="true"/>
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group col-md-6">
+					<label>机构名称 <span class="tx-danger ">*</span></label>
+					<#form:input path="officeName" maxlength="100" class="form-control required"/>
+				</div>
+				<div class="form-group col-md-6">
+					<label>机构代码 <span class="tx-danger ">*</span></label>
+					<#form:input path="viewCode" maxlength="100" class="form-control required"/>
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group col-md-6">
+					<label>机构全称 <span class="tx-danger ">*</span></label>
+					<#form:input path="fullName" maxlength="200" class="form-control required"/>
+				</div>
+				<div class="form-group col-md-6">
+					<label>排序号 <span class="tx-danger ">*</span></label>
+					<#form:input path="treeSort" class="form-control required digits"/>
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group col-md-6">
+					<label>机构类型 <span class="tx-danger ">*</span></label>
+					<#form:select path="officeType" dictType="sys_office_type" class="form-control select2 required" />
+				</div>
+			</div>
+			<div class="divider-text">详细信息</div>
+			<div class="form-row">
+				<div class="form-group col-md-6">
+					<label>负责人 <span class="tx-danger d-none">*</span></label>
+					<#form:input path="leader" maxlength="100" class="form-control"/>
+				</div>
+				<div class="form-group col-md-6">
+					<label>办公电话 <span class="tx-danger d-none">*</span></label>
+					<#form:input path="phone" maxlength="100" class="form-control"/>
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group col-md-6">
+					<label>联系地址 <span class="tx-danger d-none">*</span></label>
+					<#form:input path="address" maxlength="255" class="form-control"/>
+				</div>
+				<div class="form-group col-md-6">
+					<label>邮政编码 <span class="tx-danger d-none">*</span></label>
+					<#form:input path="zipCode" maxlength="100" class="form-control"/>
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group col-md-6">
+					<label>电子邮箱 <span class="tx-danger d-none">*</span></label>
+					<#form:input path="email" maxlength="300" class="form-control"/>
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group col-md-12">
+					<label>备注信息 <span class="tx-danger d-none">*</span></label>
+					<#form:textarea path="remarks" rows="4" maxlength="500" class="form-control"/>
+				</div>
+			</div>
+        </div>
+        <div class="card-footer pd-sm-l-30">
+            <div class="row">
+                <div class="col-sm-offset-2 col-sm-10">
+                	<% if(expIf("hasAuthority('sys:office:edit')")){ %>
+                    <button type="submit" class="btn btn-sm btn-primary">保存提交</button>
+                    <% } %>
+                    <button type="button" class="btn btn-sm btn-default" onclick="js.closeCurrentTabPage()">关闭窗口</button>
+                </div>
+            </div>
+        </div>
+   </#form:form>
+</div>
+<% } %>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				js.closeCurrentTabPage(function(contentWindow){
+					contentWindow.$('#dataGrid').dataGrid('refreshTreeChildren',
+							$('#parentCode').val(), '${office.officeCode}');
+				});
+			}
+		}, "json");
+    }
+});
+
+// 选择上级节点回调方法
+function treeselectCallback(id, act, index, layero){
+}
+</script>

@@ -1,0 +1,175 @@
+.profile-wrapper {
+  background-color: #f8f9fc;}
+
+.profile-wrapper-two {
+  position: relative;
+  height: 100%;
+  top: 0; }
+  .profile-wrapper-two .profile-content-header {
+    right: 0; }
+  .profile-wrapper-two .profile-content-body {
+    right: 0; }
+
+.profile-navleft,
+.profile-sidebar,
+.profile-content {
+  transition: all 0.3s; }
+
+.profile-sidebar {
+  background-color: #fff;
+  position: absolute;
+ top: 55px;}
+
+.profile-sidebar-header {}
+
+.profile-content {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;}
+
+.profile-content-header {
+  background-color: #fff;
+  height: 45px;
+  border-bottom: 1px solid rgba(72, 94, 144, 0.16);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  padding-left: 225px;}
+  .profile-content-header .nav-link {
+    color: #8392a5;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    padding: 0; }
+    .profile-content-header .nav-link:hover, .profile-content-header .nav-link:focus {
+      color: #525f70; }
+    .profile-content-header .nav-link.active {
+      color: #0168fa;
+      font-weight: 600;
+      position: relative; }
+      .profile-content-header .nav-link.active::before {
+        content: '';
+        position: absolute;
+        bottom: -15px;
+        left: 0;
+        width: 100%;
+        border-bottom: 1px solid #0168fa; }
+    .profile-content-header .nav-link + .nav-link {
+      margin-left: 30px; }
+
+.profile-content-body {
+  position: absolute;
+  top: 55px;
+  left: 200px;
+  right: 0;
+  bottom: 0; }
+/* @media (max-width: 1200px) {
+    .profile-content-body {
+      left: 0; } }*/
+
+ /*.profile-content-sidebar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  }
+  @media (min-width: 1200px) {
+    .profile-content-sidebar {
+      width: 290px;
+      padding: 25px;
+      right: 0; } } */
+
+.profile-edit-photo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  background-color: #e5e9f2;
+  color: #8392a5;
+  border-radius: 100%;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  box-shadow: 0 0 0 3px #fff; }
+  .profile-edit-photo:hover, .profile-edit-photo:focus {
+    color: #1b2e4b;
+    background-color: #c0ccda; }
+  .profile-edit-photo svg {
+    width: 12px;
+    stroke-width: 3px; }
+
+.profile-call-nav {
+  display: flex; }
+  .profile-call-nav a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 100%;
+    color: #fff; }
+    .profile-call-nav a svg {
+      width: 16px;
+      stroke-width: 2.6px; }
+    .profile-call-nav a + a {
+      margin-left: 8px; }
+    .profile-call-nav a.nav-call {
+      background-color: #00cccc; }
+      .profile-call-nav a.nav-call:hover, .profile-call-nav a.nav-call:focus {
+        background-color: #009999; }
+    .profile-call-nav a.nav-video {
+      background-color: #f10075; }
+      .profile-call-nav a.nav-video:hover, .profile-call-nav a.nav-video:focus {
+        background-color: #be005c; }
+    .profile-call-nav a.nav-msg {
+      background-color: #0168fa; }
+      .profile-call-nav a.nav-msg:hover, .profile-call-nav a.nav-msg:focus {
+        background-color: #0153c7; }
+
+.profile-actions {
+  display: flex;
+  position: relative;
+  margin-top: -2px; }
+  .profile-actions a {
+    display: flex;
+    align-items: flex-end;
+    color: #1b2e4b; }
+    .profile-actions a:hover, .profile-actions a:focus {
+      color: #0168fa; }
+    .profile-actions a svg {
+      width: 16px;
+      stroke-width: 2.6px;
+      margin-right: 5px; }
+    .profile-actions a + a {
+      margin-left: 20px; }
+
+.profile-content-nav .nav-link {
+  color: #1b2e4b;
+  display: flex;
+  align-items: center;
+  padding: 0; }
+  .profile-content-nav .nav-link:hover, .profile-content-nav .nav-link:focus {
+    color: #0168fa; }
+  .profile-content-nav .nav-link + .nav-link {
+    margin-top: 10px; }
+
+.profile-content-nav svg {
+  position: relative;
+  margin-top: -2px;
+  width: 16px;
+  margin-right: 12px; }
+.profile-wrapper.genTable{
+	top:0px;
+}
+.profile-wrapper.genTable .profile-sidebar{
+	left:0px;
+	width:200px;
+}
+.profile-wrapper.genTable .profile-content{
+	left:200px;
+}

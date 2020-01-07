@@ -1,0 +1,55 @@
+<% layout('/layouts/default.html', {title: '缓存管理', libs: ['dataGrid']}){ %>
+<div class="card bd-0">
+    <div class="card-header d-flex align-items-start justify-content-between box-header">
+      <div class="pt-1">缓存信息</div>
+      <div class="d-flex">
+          <button type="button" id="btnSearch" title="查询" class="btn btn-xs btn-default"><i  class="fa fa-filter"></i>查询</button>
+      </div>
+    </div>
+    <div class="card-body pd-10">
+      <#form:form id="searchForm" action="${ctx}/state/cache/formData" method="post"  class="form-horizontal"
+				data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+        <div class="form-group">
+        	<div class="input-group">
+	        	<div class="input-group-prepend">
+				    <span class="input-group-text">${dataType}</span>
+				</div>
+				<input type="hidden" name="dataType" value="${dataType}">
+				<input type="text" name="key" class="form-control wd-600-f" value="${key}">
+				<input type="text" class="form-control wd-100-f" value="${ttl}">
+				<div class="input-group-append">
+				    <a href="" class="input-group-text">刷新</a>
+				    <a href="#" class="input-group-text">设置过期时间</a>
+				</div>
+			</div>
+        </div>
+      </#form:form>
+      <table id="dataGrid"></table>
+      <div id="dataGridPage"></div>
+    </div>
+  </div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		<% if(dataType=="hash"){ %>
+		{header:'name', name:'key', index:'key', width:300, fixed:true},
+		<% } %>
+		{header:'value', name:'value', index:'value', editable: true, edittype: "text"},
+		{header:'操作', name:'actions', width:100, fixed:true,  sortable:false, title:false, align:"center", formatter: function(val, obj, row, act){
+			var actions = [];
+				actions.push('<a href="${ctx}/state/cache/delete?key=${key}&hashKey='+row.key+'" class="btnList" title="删除缓存" data-confirm="确认要删除该缓存吗？">删除</a>&nbsp;');
+			actions.push('</div>');
+			
+			return actions.join('');
+		}}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	},
+});
+</script>
+</body></html>

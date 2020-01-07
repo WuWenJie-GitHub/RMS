@@ -1,0 +1,109 @@
+<% layout('/layouts/default.html', {title: '机构管理', libs: ['dataGrid']}){ %>
+ <div class="card bd-0">
+    <div class="card-header d-flex align-items-start justify-content-between box-header">
+      <div class="pt-1">机构管理</div>
+      <div class="d-flex">
+          <button type="button" id="btnSearch" title="查询" class="btn btn-xs btn-default"><i class="fa fa-filter"></i>查询</button>
+          <button type="button" id="btnRefreshTree" class="btn btn-xs btn-default mg-l-10" title="刷新"><i class="fa fa-redo-alt"></i> 刷新</button>
+          <button type="button" id="btnExpandTreeNode" class="btn btn-xs btn-default mg-l-10" title="展开一级"><i class="fa fa-angle-double-down"></i> 展开</button>
+          <button type="button" id="btnCollapseTreeNode" class="btn btn-xs btn-default mg-l-10" title="折叠全部"><i class="fa fa-angle-double-up"></i> 折叠</button>
+          <% if(expIf("hasAuthority('sys:office:edit')")){ %>
+          <a href="${ctx}/sys/office/form" class="btn btn-xs btn-primary mg-l-10 btnTool" title="新增机构"><i class="fa fa-plus"></i>新增</a>
+          <% } %>
+      </div>
+    </div>
+    <div class="card-body pd-10">
+       <#form:form id="searchForm" model="${office}" action="${ctx}/sys/office/listData" method="post" class="form-horizontal"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+		<#form:hidden path="officeCode" class="isReset" />
+		<div class="form-group">
+			<div class="input-group wd-250">
+				<div class="input-group-prepend">
+					<span class="input-group-text">机构名称</span>
+         		</div>
+				<#form:input path="officeName" maxlength="200" class="form-control"/>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="input-group wd-250">
+				<div class="input-group-prepend">
+					<span class="input-group-text">机构全称</span>
+         		</div>
+				<#form:input path="fullName" maxlength="200" class="form-control"/>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="input-group">
+				<div class="input-group-prepend">
+					<span class="input-group-text">机构类型</span>
+         		</div>
+         		<div class="wd-100">
+				<#form:select path="officeType" dictType="sys_office_type" blankOption="true" class="form-control select2"/>
+				</div>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="input-group">
+				<div class="input-group-prepend">
+					<span class="input-group-text">状态</span>
+         		</div>
+         		<div class="wd-100">
+				<#form:select path="status" dictType="sys_search_status" blankOption="true" class="form-control select2"/>
+				</div>
+			</div>
+		</div>
+		<div class="form-group">
+			<button type="submit" class="btn btn-primary btn-sm">查询</button>
+			<button type="reset" class="btn btn-default btn-sm">重置</button>
+		</div>
+		</#form:form>
+		<table id="dataGrid"></table>
+    </div>
+  </div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'机构名称', name:'officeName', index:'office_name', width:250, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '( '+row.viewCode+' ) '+'<a href="${ctx}/sys/office/form?officeCode='+row.officeCode+'" class="btnList" data-title="编辑机构")}">'+(val||row.id)+'</a>';
+		}},
+		{header:'机构全称', name:'fullName', index:'full_name', width:150, align:"left"},
+		{header:'排序号', name:'treeSort', index:'tree_sort', width:150, align:"center"},
+		{header:'机构类型', name:'officeType', index:'office_type', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('sys_office_type')}, val, '未知}', true);
+		}},
+		{header:'负责人', name:'leader', index:'leader', width:150, align:"left"},
+		{header:'办公电话', name:'phone', index:'phone', width:150, align:"left"},
+		{header:'更新时间', name:'updateTime', index:'update_time', width:150, align:"left"},
+		{header:'状态', name:'status', index:'status', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('sys_search_status')}, val, '未知}', true);
+		}},
+		{header:'操作', name:'actions', width:130, fixed:true, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(expIf("hasAuthority('sys:office:edit')")){ %>
+				actions.push('<a href="${ctx}/sys/office/form?officeCode='+row.officeCode+'" class="btnList" title="编辑机构"><i class="la la-edit"></i></a>&nbsp;');
+				if (row.status == Global.STATUS_NORMAL){
+					actions.push('<a href="${ctx}/sys/office/disable?officeCode='+row.officeCode+'" class="btnList" title="停用机构" data-confirm="确认要停用该机构吗？")}"><i class="la la-minus-circle"></i></a>&nbsp;');
+				}
+				if (row.status == Global.STATUS_DISABLE){
+					actions.push('<a href="${ctx}/sys/office/enable?officeCode='+row.officeCode+'" class="btnList" title="启用机构" data-confirm="确认要启用该机构吗？")}"><i class="la la-check-circle"></i></a>&nbsp;');
+				}
+				actions.push('<a href="${ctx}/sys/office/delete?officeCode='+row.officeCode+'" class="btnList" title="删除机构" data-confirm="确认要删除该机构及所有子机构吗？")}" data-deltreenode="'+row.officeCode+'"><i class="la la-trash"></i></a>&nbsp;');
+				actions.push('<a href="${ctx}/sys/office/form?parentCode='+row.officeCode+'" class="btnList" title="新增下级机构"><i class="la la-plus-square"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+	dataId: 'officeCode',
+	treeGrid: true,			// 启用树结构表格
+	defaultExpandLevel: 0,	// 默认展开的层次
+	expandNodeClearPostData: 'officeName', // 展开节点清理请求参数数据（一般设置查询条件的字段属性，否则在查询后，不能展开子节点数据）
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>
+</body></html>

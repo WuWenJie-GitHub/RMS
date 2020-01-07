@@ -1,0 +1,10 @@
+<% layout('/layouts/default.html', {title: '', libs: ['tabPage']}){ %>
+<% include('/include/aside.html'){} %>
+<div class="content ht-100v pd-0">
+    <% include('/include/content-header.html'){} %>
+    <div id="tabpanel"></div>
+</div>
+<% } %>
+<div class="d-none" id="desktopTabPage" data-url="${ctx}${@Global.getConfig('sys.index.desktopUrl','/desktop')}"></div>
+<script src="${ctxStatic}/tangdao.index.js"></script>
+</body></html>

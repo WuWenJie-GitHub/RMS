@@ -1,0 +1,11 @@
+<meta charset="utf-8"><meta content="webkit" name="renderer"/><meta http-equiv="X-UA-Compatible"
+content="IE=edge" /><meta name="keywords" content="Tangdao,Admin,Manager,CMS,OA,SMS"/><meta http-equiv="Cache-Control"
+content="no-cache, no-store, must-revalidate"/><meta name="description" content="PoweredByTangdao.1.0.0"/><meta
+content="no-cache" http-equiv="Pragma"/><meta http-equiv="Expires" content="0"/><meta
+content="width=device-width, initial-scale=1, user-scalable=1" name="viewport"/>
+<title>${(isNotEmpty(title!) ? title! + ' - ' : '') + @Global.getConfig('info.app.name')}</title>
+<script src="${ctxPath}/global.min.js"></script>
+<script src="${ctxStatic}/vendors/jquery/jquery.min.js"></script>
+<% if(parameter.__layer! == 'true'){ %>
+<style>.card>.card-header{display:none !important;}.card>.card-header+form{margin-top:0px !important;}</style>
+<% } %>

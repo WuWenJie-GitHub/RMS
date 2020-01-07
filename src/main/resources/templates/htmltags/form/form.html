@@ -1,0 +1,16 @@
+<%
+var p = {
+
+	// 标签参数
+	id: id!,					// 表单ID
+	model: model!,				// 绑定Model对象，例如：${user!}
+	action: action!,			// 表单请求地址
+	method: method!,			// 请求方法，默认 post
+	enctype: enctype!,			// 发送之前进行数据编码，上传文件时指定：multipart/form-data
+	model: model!
+};
+pageCtx("modelAttr", p.model);
+%>
+<form id="${p.id}" action="${p.action}" <%if(isNotEmpty(p.method!)){%>method="${p.method}"<%}%> <%if(isNotEmpty(p.enctype!)){%>enctype="${p.enctype}"<%}%> <%if(isNotEmpty(class!)){%>class="${class!}"<%}%> <%if(isNotEmpty(style!)){%>style="${style!}"<%}%>>
+${tagBody}
+</form>

@@ -1,0 +1,7 @@
+<% print('<'+'!DOC'+'TYPE html'+'>'); %>
+<% print('<'+'html'+'><'+'head'+'>'); %>
+<% include('/include/head.html', {title: title!}){} %>
+<% include('/include/css.html', {libs: libs!}){} %>
+</head><body<%if(isNotEmpty(bodyClass!)){%> class="${bodyClass!}"<%}%>>
+${layoutContent}
+<% include('/include/script.html', {libs: libs!}){} %>

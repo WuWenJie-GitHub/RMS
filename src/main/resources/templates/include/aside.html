@@ -1,0 +1,69 @@
+<div class="aside aside-fixed">
+    <div class="aside-header">
+        <a href="javascript:;" class="aside-logo pd-l-5">${@Global.getConfig('info.app.name')}</a>
+        <a href="javascript:;" class="aside-menu-link">
+            <i data-feather="menu"></i>
+            <i data-feather="x"></i>
+        </a>
+    </div>
+    <div class="aside-body">
+        <div class="aside-loggedin">
+            <div class="d-flex align-items-center justify-content-start">
+                <a href="javascript:;" data-href="${ctx}/userinfo/profile" data-title="用户信息" class="avatar addTabPage"><img src="${ctxStatic+user.avatar!'/images/user1.jpg'}" class="rounded-circle" alt=""></a>
+                <div class="aside-alert-link">
+                    <a href="" class="new" data-toggle="tooltip" title="你有 2 条 未读消息"><i
+                            data-feather="message-square"></i></a>
+                    <a href="" class="new" data-toggle="tooltip" title="你有 4 个 通知"><i
+                            data-feather="bell"></i></a>
+                    <a href="${ctx}/logout" data-toggle="tooltip" title="退出系统"><i data-feather="log-out"></i></a>
+                </div>
+            </div>
+            <div class="aside-loggedin-user">
+                <a href="javascript:;" class="d-flex align-items-center justify-content-between mg-b-2">
+                    <h6 class="tx-semibold mg-b-0">${user.nickname!user.username}</h6>
+                </a>
+                <p class="tx-color-03 tx-12 mg-b-0">${user.email!user.mobile}</p>
+            </div>
+        </div><!-- aside-loggedin -->
+        <ul class="nav nav-aside">
+       	<% for(item in menus) { %>
+           	<% if(@ListUtils.isEmpty(item.children)){  %>
+            	<li class="nav-label${itemLP.index==1?'':' mg-t-25'}">${item.menuName}</li>
+            <% }else{ %>
+            	<li class="nav-label${itemLP.index==1?'':' mg-t-25'}">${item.menuName}</li>
+            	<% for(subItem in item.children){ %>
+            		<% if(@ListUtils.isEmpty(subItem.children)){  %>
+	            	<li class="nav-item treeview">
+	            		
+	            		<a href="javascript:;" data-href="${strutil.startWith(subItem.menuHref,'//')?'':ctx}${@StringUtils.replace(subItem.menuHref,'//','/')}" class="nav-link addTabPage" data-code="${subItem.menuCode}">
+	            			<i class="${isEmpty(subItem.menuIcon)?'la la-code':subItem.menuIcon}"></i>
+	                		<span>${subItem.menuName}</span>
+	                	</a>
+	                </li>
+	                <% }else{ %>
+                	<li class="nav-item with-sub">
+		                <a href="javascript:;" class="nav-link">
+			                <i class="${isEmpty(subItem.menuIcon)?'la la-code':subItem.menuIcon}"></i> 
+			                <span>${subItem.menuName}</span>
+		                </a>
+		                <ul>
+		                	<% for(thrItem in subItem.children){ %>
+		                		<% if(@ListUtils.isEmpty(thrItem.children)){ %>
+			                    <li class="treeview">
+			                    	<a href="javascript:;" data-href="${strutil.startWith(thrItem.menuHref,'//')?'':ctx}${@StringUtils.replace(thrItem.menuHref,'//','/')}" class="addTabPage" data-code="${thrItem.menuCode}">
+			                    		<i class="badge badge-dot"><span></span></i>${thrItem.menuName}
+			                    	</a>
+			                    </li>
+		                		<% }else{ %>
+		                			
+		                		<% } %>
+		                    <% } %>
+		                </ul>
+		            </li>
+	                <% } %>
+                <% } %>
+            <% } %>
+         <% } %>
+        </ul>
+    </div>
+</div>

@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template>
+	<name>entity</name>
+	<filePath>src/main/java/${packageName}/${moduleName}/model/domain/${subModuleName}</filePath>
+	<fileName>${ClassName}.java</fileName>
+	<content><![CDATA[
+package ${packageName}.${moduleName}.model.domain${isNotEmpty(subModuleName)?'.'+subModuleName:''};
+
+<% for(i in table.importList){ %>
+import ${i};
+<% } %>
+
+import org.tangdao.common.suports.${table.isTreeEntity?'Tree':'Data'}Entity;
+<% for(c in table.columnList){if(table.treeViewNameJavaField == c.javaField){ %>
+import org.tangdao.common.suports.TreeName;
+<% }} %>
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+
+/**
+ * ${functionName}Entity
+ * @author ${functionAuthor}
+ * @version ${functionVersion}
+ */
+@TableName("${table.tableName}")
+public class ${ClassName} extends ${table.isTreeEntity?'Tree':'Data'}Entity<${ClassName}> {
+	
+	private static final long serialVersionUID = 1L;
+	
+	<%
+	isExtend = false;
+	// 生成字段属性
+	for(c in table.columnList){
+		// 如果不是基类属性
+		if(c.isNotBaseField){
+			// 父类对象
+			if(table.parentExists && table.parentTableFkName == c.columnName){
+	%>
+	private ${@StringUtils.cap(table.parent.className)} ${c.simpleJavaField};		<% if (isNotEmpty(c.comments)){ %>// ${c.comments} 父类<% } %>
+	<%
+			// 其它字段
+			}else{
+	if(c.isPk=='1'){
+	%>
+	@TableId
+	<% } 
+	if(table.treeViewNameJavaField == c.javaField){
+	%>
+	@TreeName
+	<%
+	}
+	%>
+	private ${c.simpleJavaType} ${c.simpleJavaField};		<%if(isNotEmpty(c.comments)){%>// ${c.comments}<%}%>
+	<%
+			}
+		}
+	}
+	
+	// 生成子表列表字段
+	for(child in table.childList){
+	%>
+	private List<${@StringUtils.cap(child.className)}> ${@StringUtils.uncap(child.className)}List = ListUtils.newArrayList();		// 子表列表
+	<%
+	}
+	
+	// 生成构造方法
+	%>
+	
+	public ${ClassName}() {
+		super();
+	}
+
+	<%
+	// 生成带主键参数的构造
+	if (!table.parentExists){
+		if (table.pkList.~size == 1){ 
+		for(c in table.columnList){
+		if(c.isPk=='1'){%>
+	public ${ClassName}(String ${c.simpleJavaField}){
+		super(${c.simpleJavaField});
+	}
+	<%	}}}else{ %>
+	public ${ClassName}(<% for(pk in table.pkList){ %>${pkLP.index!=1?', ':''}${pk.simpleJavaType} ${pk.simpleJavaField}<% } %>){
+		<% for(pk in table.pkList){ %>
+		this.${pk.simpleJavaField} = ${pk.simpleJavaField};
+		<% } %>
+	}
+	<%
+		}
+	}
+	
+	// 生成父表参数的构造
+	else{
+		for(c in table.columnList){
+			if(table.parentExists && table.parentTableFkName == c.columnName){
+	%>
+
+	public ${ClassName}(${@StringUtils.cap(table.parent.className)} ${c.simpleJavaField}){
+		this.${c.simpleJavaField} = ${c.simpleJavaField};
+	}
+	<%
+			}
+		}
+	}
+	
+	// 如果是树实体，则输出相应方法
+	if (table.isTreeEntity){
+	%>
+	
+	@Override
+	public ${ClassName} getParent() {
+		return parent;
+	}
+
+	<%
+	}
+	
+	// 生成属性的get和set方法 
+	isExtend = false;
+	for(c in table.columnList){
+		if(c.isNotBaseField){
+	%>
+	
+	<%
+			for(a in c.simpleAnnotationList){
+	%>
+	@${a}
+	<%
+			}
+			// 父类对象
+			if(table.parentExists && table.parentTableFkName == c.columnName){
+	%>
+	public ${@StringUtils.cap(table.parent.className)} get${@StringUtils.cap(c.simpleJavaField)}() {
+		return ${c.simpleJavaField};
+	}
+
+	public void set${@StringUtils.cap(c.simpleJavaField)}(${@StringUtils.cap(table.parent.className)} ${c.simpleJavaField}) {
+		this.${c.simpleJavaField} = ${c.simpleJavaField};
+	}
+	<%
+			// 其它字段
+			}else{
+	%>
+	public ${c.simpleJavaType} get${@StringUtils.cap(c.simpleJavaField)}() {
+		return ${c.simpleJavaField};
+	}
+
+	public void set${@StringUtils.cap(c.simpleJavaField)}(${c.simpleJavaType} ${c.simpleJavaField}) {
+		this.${c.simpleJavaField} = ${c.simpleJavaField};
+	}
+	<%
+			}
+		}
+	}
+	
+	// 生成子表列表get和set方法
+	for(child in table.childList){
+	%>
+	
+	public List<${@StringUtils.cap(child.className)}> get${@StringUtils.cap(child.className)}List() {
+		return ${@StringUtils.uncap(child.className)}List;
+	}
+
+	public void set${@StringUtils.cap(child.className)}List(List<${@StringUtils.cap(child.className)}> ${@StringUtils.uncap(child.className)}List) {
+		this.${@StringUtils.uncap(child.className)}List = ${@StringUtils.uncap(child.className)}List;
+	}
+	<% } %>
+	
+}]]>
+	</content>
+</template>

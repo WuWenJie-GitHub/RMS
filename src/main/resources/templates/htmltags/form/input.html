@@ -1,0 +1,40 @@
+<%
+var p = {
+
+	// 标签参数
+	id: id!,					// 元素ID，如果不填写，则与name相同
+	path: path!,				// 绑定form上model中属性的值
+	name: name!,				// 元素名称，不填写
+	value: value!,				// 元素值
+	defaultValue: defaultValue!,// 默认值 v4.1.5
+	
+	type: type!'text',			// 元素的类型，默认text
+	
+	dataFormat: dataFormat!''	// 数据格式化，支持如下值：
+								// date: 日期；默认值设置：defaultValue="${date()}"
+								// yyyy: 年；默认值设置：defaultValue="${date('2019','yyyy')}"
+								// yyyy-MM: 年月；
+								// datetime: 日期时间；
+								// datetime2: 日期时间，带秒；
+								// number: 数值类型，保留2位小数，默认值设置：defaultValue="${0}"
+								// 自定义格式化 path="field" 替换为：name="field" value="${model.field,格式化类型}"
+	
+};
+var id = p.id!p.name!p.path;
+var name = p.name!p.path;
+var value = p.value!;
+if(isEmpty(value!)&&isNotEmpty(p.path!)){
+	value = form.path(p.path);
+}
+if(isEmpty(value!)){
+	value = p.defaultValue;
+}
+if(isNotEmpty(p.dataFormat)&&isNotEmpty(value)){
+	if("number"==p.dataFormat){
+		value = parseDouble(value);
+	}else{
+		value = strutil.formatDate(value, p.dataFormat);
+	}
+}
+%>
+<input type="${p.type}" id="${id}" name="${name}" <%if(isNotEmpty(value!)){%> value="${value!}"<%}%><%if(isNotEmpty(readonly!)&&@ObjectUtils.toBoolean(readonly)){%> readonly="readonly"<%}%><%if(isNotEmpty(disabled!)&&@ObjectUtils.toBoolean(disabled)){%> disabled="disabled"<%}%><%if(isNotEmpty(minlength!)){%> minlength="${minlength!}"<%}%><%if(isNotEmpty(maxlength!)){%> maxlength="${maxlength!}"<%}%><%if(isNotEmpty(placeholder!)){%> placeholder="${placeholder!}"<%}%><%if(isNotEmpty(class!)){%> class="${class!}"<%}%><%if(isNotEmpty(style!)){%> style="${style!}"<%}%><%if(isNotEmpty(onclick!)){%> onclick="${onclick!}"<%}%> autocomplete="off"/>

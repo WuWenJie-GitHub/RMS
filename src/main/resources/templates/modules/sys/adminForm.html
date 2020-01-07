@@ -1,0 +1,108 @@
+<% layout('/layouts/default.html', {title: '系统管理员', libs: ['validate','dataGrid']}){ %>
+<div class="card bd-0">
+    <div class="card-header d-flex align-items-start justify-content-between box-header fixed">
+        <div class="pt-1">${user.isNewRecord ? '新增管理员' : '编辑管理员'}</div>
+        <div class="d-flex">
+
+        </div>
+    </div>
+    <#form:form id="inputForm" model="${user}" action="${ctx}/sys/admin/save" method="post">
+    	<#form:hidden name="op" value="${op}"/>
+    	<#form:hidden name="userType" value="employee"/>
+    	<#form:hidden path="userCode"/>
+        <div class="card-body card-content-fixed pd-sm-t-30 pd-sm-b-40 pd-sm-x-30">
+        	<div class="form-row">
+	            <div class="form-group col-md-4">
+	                <label>登录账号 <span class="tx-danger ">*</span></label>
+	                <#form:hidden name="oldUsername" value="${user.username}"/>
+	                <#form:input path="username" maxlength="10" class="form-control required"/>
+	            </div>
+	            <% if(user.isNewRecord){%>
+	            <div class="form-group col-md-2">
+	                <label>账号密码 </label>
+	               	<#form:input path="password" maxlength="32" class="form-control "/>
+	            </div>
+	            <%}%>
+            </div>
+        	<div class="form-row">
+	            <div class="form-group col-md-4">
+	                <label>用户昵称 <span class="tx-danger ">*</span></label>
+	               	<#form:input path="nickname" maxlength="32" class="form-control required"/>
+	            </div>
+	            <div class="form-group col-md-2 pd-md-t-30">
+	            	<button type="button" class="btn btn-sm btn-secondary" data-toggle="tooltip" data-placement="top" title="别当真、还是你自己写！">随机昵称</button>
+	            </div>
+            </div>
+            <div class="form-row">
+	            <div class="form-group col-md-4">
+	                <label>电子邮箱</label>
+	               	<#form:input path="email" maxlength="300" class="form-control email"/>
+	            </div>
+	            <div class="form-group col-md-4">
+	                <label>手机号码</label>
+	               	<#form:input path="mobile" maxlength="100" class="form-control mobile"/>
+	            </div>
+	            <div class="form-group col-md-4">
+	                <label>办公电话</label>
+	               	<#form:input path="phone" maxlength="100" class="form-control phone"/>
+	            </div>
+            </div>
+            
+            <div class="form-group">
+                <label>备注</label>
+                 <#form:textarea path="remarks" class="form-control" row="5" placeholder="请输入" />
+            </div>
+            <div class="form-group">
+            	<label>角色选择</label>
+            	<table id="roleGrid"></table>
+				<#form:hidden name="roleCodeString"/>
+			</div>
+        </div>
+        <div class="card-footer pd-sm-l-30">
+            <div class="row">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-sm btn-primary">保存提交</button>
+                    <button type="button" class="btn btn-sm btn-default" onclick="js.closeCurrentTabPage()">关闭窗口</button>
+                </div>
+            </div>
+        </div>
+    </#form:form>
+</div>
+<% } %>
+<script>
+//加载角色列表
+var roleGrid = $("#roleGrid").dataGrid({
+	url: '${ctx}/sys/role/treeData',
+	postData: [
+		{name:'isAll',value: true}
+	],
+	columnModel: [
+		{header:'角色名称', name:'name', sortable:false, width:100, align:"center"},
+		{header:'角色编码', name:'id', sortable:false, width:100, align:"center"},
+		{header:'角色说明', name:'remarks', sortable:false, align:"left"}
+	],
+	showCheckbox: true,
+	autoGridHeight: function(){
+		return 'auto';
+	},
+	ajaxSuccess: function(){
+		<% for (role in user.roles!){ %>
+		roleGrid.dataGrid('setSelectRow', '${role.roleCode}');
+		<% } %>
+	}
+});
+$("#inputForm").validate({
+	submitHandler: function(form){
+		$("#roleCodeString").val(roleGrid.dataGrid('getSelectRows').join(','));
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				js.closeCurrentTabPage(function(contentWindow){
+					contentWindow.page();
+				});
+			}
+		}, "json");
+ }
+});
+</script>
+</body></html>

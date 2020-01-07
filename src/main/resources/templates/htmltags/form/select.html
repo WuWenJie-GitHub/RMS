@@ -1,0 +1,51 @@
+<%
+var p = {
+
+	// 标签参数
+	id: id!,					// 元素ID，如果不填写，则与name相同
+	path: path!,				// 绑定form上model中属性的值
+	name: name!,				// 元素名称，不填写
+	value: value!,				// 元素值
+	defaultValue: defaultValue!,// 默认值 v4.1.5
+	
+	dictType: dictType!,		// 字典类型，从字典里获取，自动设置items、itemLabel、itemValue
+	
+	items: items!([]),			// 列表数据，可接受对象集合，如：List<DictData>
+	itemLabel: itemLabel!'dictLabel',	// 指定列表数据中的什么属性名作为option的标签名
+	itemValue: itemValue!'dictValue',	// 指定列表数据中的什么属性名作为option的value值
+	
+	multiple: multiple!'false', // 是否为多选框
+	
+	blankOption: @ObjectUtils.toBoolean(blankOption!false), // 是否默认有个空白选择项目
+	blankOptionLabel: blankOptionLabel!'&nbsp;' // 给空白选择项目设置一个标签，如：请选择、全部
+	
+};
+var id = p.id!p.name!p.path;
+var name = p.name!p.path;
+var value = p.value!;
+if(isEmpty(value!)&&isNotEmpty(p.path!)){
+	value = form.path(p.path);
+}
+if(isEmpty(value!)){
+	value = p.defaultValue;
+}
+//封装dictType To items
+if(isNotEmpty(p.dictType)){
+	var list = @DictUtils.getDictList(p.dictType);
+	if(@ListUtils.isNotEmpty(list)){
+		for(item in list){
+			array.add(p.items,item);
+		}
+	}
+}
+
+%>
+<select class="${class!}" id="${id}" name="${name}"<%if(@ObjectUtils.toBoolean(p.multiple)){%> multiple="multiple"<%}%><%if(isNotEmpty(readonly!)&&@ObjectUtils.toBoolean(readonly)){%> readonly="readonly"<%}%><%if(isNotEmpty(disabled!)&&@ObjectUtils.toBoolean(disabled)){%> disabled="disabled"<%}%><%if(isNotEmpty(style!)){%> style="${style!}"<%}%>>
+<% if(@ObjectUtils.toBoolean(p.blankOption)){ %>
+<option value="">${p.blankOptionLabel}</option>
+<%}if(@ListUtils.isNotEmpty(p.items)){for(item in p.items){if(isNotEmpty(p.dictType)){%>
+<option <%if(isNotEmpty(item.cssStyle!)){%> style="${item.cssStyle}"<%}%><%if(isNotEmpty(item.cssClass!)){%> style="${item.cssClass}"<%}%><%if(@StringUtils.inString(item[p.itemValue], @StringUtils.split(@ObjectUtils.toString(value!),','))){%>selected="selected"<%}%> value="${item[p.itemValue]}">${item[p.itemLabel]}</option>
+<%}else{%>
+<option <%if(@StringUtils.inString(item[p.itemValue], @StringUtils.split(@ObjectUtils.toString(value!),','))){%>selected="selected"<%}%> value="${item[p.itemValue]}">${item[p.itemLabel]}</option>
+<%}}} %>
+</select>

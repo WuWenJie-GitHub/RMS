@@ -1,0 +1,69 @@
+<%
+var p = {
+
+	// 标签参数
+	id: id!,					// 元素ID
+	
+	path: path!,				// 绑定form上model中属性的值
+	name: name!,				// 隐藏域名称
+	value: value!,				// 隐藏域值
+	defaultValue: defaultValue! // 默认值 v4.1.5
+	
+};
+
+var id = id!name!p.path;
+var name = name!p.path;
+var value = p.value!;
+if(isEmpty(value!)&&isNotEmpty(p.path!)){
+	value = form.path(p.path);
+}
+if(isEmpty(value!)){
+	value = p.defaultValue;
+}
+%>
+<div class="input-group" id="${id}Div">
+<div class="input-group-prepend"> 
+  <span class="input-group-text wd-35"><i id="${id}Icon" class="${value!'la la-file-o'}"></i></span>
+</div>
+<input id="${id!}" name="${name!}" type="text" value="${value!}" <%if(isNotEmpty(readonly!)&&@ObjectUtils.toBoolean(readonly)){%> readonly="readonly"<%}%><%if(isNotEmpty(disabled!)&&@ObjectUtils.toBoolean(disabled)){%> disabled="disabled"<%}%><%if(isNotEmpty(p.placeholder!)){%> placeholder="${p.placeholder!}"<%}%><%if(isNotEmpty(class!)){%> class="${class!}"<%}%><%if(isNotEmpty(style!)){%> style="${style!}"<%}%>/>
+<div class="input-group-append">
+   <button type="button" id="${id}Button" class="btn btn-outline-light"><i class="la la-search"></i></button>
+</div>
+</div>
+<script>
+$("#${id}Button").click(function(){
+	js.layer.open({
+		type: 2,
+		maxmin: true,
+		shadeClose: true,
+		title: '图标选择',
+		area: [(js.layer.$(js.layer.window).width() - 300) + 'px',
+		       (js.layer.$(js.layer.window).height() - 100) + 'px'],
+		content: '${ctxPath}/tags/iconselect?value='+$("#${id}").val(),
+		success: function(layero, index){
+			var info = '<font color="red" class="pull-left mg-t-10">提示：双击选择图标。</font>';
+			layero.find('.layui-layer-btn').append(info);
+		},
+		contentFormData: {
+            __layer: true
+        },
+		btn: ['<i class="la la-close"></i> 关闭',
+			'<i class="la la-eraser"></i> 清除'],
+		btn1: function(index, layero){
+			var win = null;
+			var b = $(layero).find("iframe");
+	        if (b.length > 0) {
+	        	win = b[0].contentWindow;
+	        }
+			var icon = win.$("#icon").val();
+			$("#${id}Icon").attr("class", icon);
+			$("#${id}").val(icon).change();
+			try { $('#${id}').resetValid(); }catch(e){}
+		},
+		btn2: function(index, layero){
+			$("#${id}Icon").attr("class", "la ");
+            $("#${id}").val("").change();
+		}
+	});
+});
+</script>	

@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template>
+	<name>viewForm</name>
+	<filePath>src/main/resources/templates/${lastPackageName}/${moduleName}/${subModuleName}</filePath>
+	<fileName>${className}Form.html</fileName>
+	<content><![CDATA[
+<%
+	var extLibs = '';
+	if(@ObjectUtils.toBoolean(table.optionMap['isImageUpload']) || @ObjectUtils.toBoolean(table.optionMap['isFileUpload'])){
+		extLibs = extLibs + ',\'fileupload\'';
+	}
+	if(table.childList.~size > 0){
+		extLibs = extLibs + ',\'dataGrid\'';
+	}
+	
+	// 获取到唯一ID的url参数字符串
+	var idParam = '';
+	for(pk in table.pkList){
+		idParam = pk.javaField;
+	}
+%>
+\<% layout('/layouts/default.html', {title: '${functionNameSimple}管理', libs: ['validate'${extLibs}]}){ %>
+<div class="card bd-0">
+    <div class="card-header d-flex align-items-start justify-content-between pd-10-f">
+        <div class="pt-1">\${${className}.isNewRecord ? '新增${functionNameSimple}' : '编辑${functionNameSimple}'}</div>
+        <div class="d-flex">
+        </div>
+    </div>
+    <${'#'}form:form id="inputForm" model="\${${className}}" action="\${ctx}/${urlPrefix}/save" method="post">
+        <div class="card-body card-content-fixed pd-sm-t-30 pd-sm-b-40 pd-sm-x-30">
+        	<% if(table.isTreeEntity){ %>
+			<div class="form-row">
+				<div class="form-group col-md-6">
+					<label>上级${functionNameSimple} <span class="tx-danger d-none">*</span></label>
+					<${'#'}form:treeselect 
+						id="parent" 
+						title="上级${functionNameSimple}"
+						path="parent.${className}Code" 
+						labelPath="parent.${className}Name"
+						url="\${ctx}/${urlPrefix}/treeData?excludeCode=\${${className}.${table.treeViewCodeJavaField}}"
+						class="form-control" allowClear="true" canSelectRoot="true" canSelectParent="true"/>
+				</div>
+			</div>
+			<% } %>
+<% 
+	var rowFlag = -1, preGridRowCol;
+	for (c in table.columnList){
+		if (c.isEdit == '1'){
+			// 如果是树结构的字段，则自动忽略
+			if(table.isTreeEntity && @StringUtils.inString(c.columnName, 'parent_code',
+				'parent_codes', 'tree_sorts', 'tree_leaf', 'tree_level', 'tree_names')){
+			}
+			// 如果是隐藏域
+			else if (c.showType == 'hidden'){
+%>
+			<${'#'}form:hidden path="${c.javaField}"/>
+<%
+			}
+			// 输出表单字段
+			else{
+				// 栅格参数获取
+				var gridRowCol = @StringUtils.split(c.optionMap['gridRowCol'], '/');
+				if (isEmpty(gridRowCol) || gridRowCol.~size != 3){
+					if (c.showType == 'textarea'){
+						gridRowCol = @StringUtils.split('12/2/10', '/');
+					}else{
+						gridRowCol = @StringUtils.split('6/4/8', '/');
+					}
+				}
+				// 是否强制新行获取，生成字段界面用户设定的
+				var isNewLine = @Global.YES.equals(c.optionMap['isNewLine']);
+				if (isEmpty(c.optionMap['isNewLine'])){
+					if (c.showType == 'textarea'){
+						isNewLine = true;
+					}
+				}
+				// 如果上一个控件占12列，则强制新行算了
+				if (isNotEmpty(preGridRowCol) && preGridRowCol[0] == '12'){
+					isNewLine = true;
+				}
+				// 保存上一个控件输出栅格对象
+				preGridRowCol = gridRowCol;
+				// 如果完成输出2列，则换行
+				if(rowFlag == 2){
+					isNewLine = true;
+				}
+				// 如果是扩展字段，则输出子标题，并且强制换行
+				if (c.columnName == 'extend_s1'){
+					isNewLine = true;
+				}
+				// 如果是第一个控件
+				if (rowFlag == -1){
+%>
+			<div class="form-row">
+<%
+				}
+				// 如果不是第一个控件，并且是新行，或者是扩展字段，则输出结束符
+				else if(isNewLine){
+%>
+			</div>
+<%
+				}
+				// 如果是新行，则换行
+				if(isNewLine){
+					rowFlag = 0; // 输出行标记清零
+%>
+			<div class="form-row">
+<%
+				}
+				// 开始输出控件
+%>
+				<div class="form-group col-md-${gridRowCol[0]}">
+					<label>${c.comments} <span class="tx-danger ${c.isNull == '1' ? '' : 'd-none'}">*</span></label>
+				<%
+					var attrs = '';
+					if (c.dataLength != '0'){
+						var s = { %> maxlength="${c.dataLength}"<% };
+						attrs = attrs + s;
+					}
+					if (c.isPk == '1'){
+						var s = { %> readonly="\${!${className}.isNewRecord}"<% };
+						attrs = attrs + s;
+					}
+					var cssClass = '';
+					if (c.isNull == '1'){ 
+						cssClass = cssClass + ' required';
+					}
+					var fieldValid = c.optionMap['fieldValid'];
+					if (isNotEmpty(fieldValid)){
+						if (type.name(fieldValid) == 'String[]'){
+							for (var fv in fieldValid){
+								cssClass = cssClass + ' ' + fv;
+							}
+						}else if(isNotEmpty(fieldValid)){
+							cssClass = cssClass + ' ' + fieldValid;
+						}
+					}
+					if (c.showType == 'input'){
+						// 如果为自定义主键，则第一个pk字段需输出isNewRecord
+						if (c.isPk == '1' && table.pkList[0].columnName == c.columnName){
+				%>
+					<${'#'}form:hidden path="isNewRecord"/>
+				<%
+						}
+				%>
+<${'#'}form:input path="${c.javaField}"${attrs} class="form-control${cssClass}"/>
+				<%
+					} else if (c.showType == 'textarea') {
+				%>
+<${'#'}form:textarea path="${c.javaField}" rows="4"${attrs} class="form-control${cssClass}"/>
+				<%
+					} else if (c.showType == 'select' || c.showType == 'select_multiple') {
+						var isMultiple = (c.showType == 'select_multiple');
+				%>
+<${'#'}form:select path="${c.javaField}" dictType="${c.optionMap['dictType']}"${isMultiple?' multiple="true"':''}${c.isNull != '1'?' blankOption="true"':''} class="form-control select2 ${cssClass}" />
+				<%
+					} else if (c.showType == 'radio') {
+				%>
+<${'#'}form:radio path="${c.javaField}" dictType="${c.optionMap['dictType']}" class="form-control${cssClass}" />
+				<%
+					} else if (c.showType == 'checkbox') {
+				%>
+<${'#'}form:checkbox path="${c.javaField}" dictType="${c.optionMap['dictType']}" class="form-control${cssClass}" />
+				<%
+					} else if (c.showType == 'date' || c.showType == 'datetime') {
+						var isTime = (c.showType == 'datetime');
+				%>
+<${'#'}form:input path="${c.javaField}" readonly="true" maxlength="20" class="form-control Wdate${cssClass}"
+						dataFormat="date${isTime?'time':''}" onclick="WdatePicker({dateFmt:'yyyy-MM-dd${isTime?' HH:mm':''}',isShowClear:${c.isNull != '1'}});"/>
+				<%
+					} else if (c.showType == 'userselect') {
+				%>
+				<%
+					} else if (c.showType == 'officeselect') {
+				%>
+				<%
+					} else if (c.showType == 'areaselect') {
+				%>
+				<%
+					}
+				%>
+				</div>
+<%
+				// 如果是第一个控件输出
+				if (rowFlag == -1){
+					rowFlag = 1;
+				}
+				// 行标记+1，代表完成输出1列
+				else{
+					rowFlag = rowFlag + 1;
+				}
+			}
+			// 输出控件 End
+		}
+	}
+	// 如果没有输出row结束符，则输出
+	if (rowFlag > 0){
+%>
+			</div>
+<%
+	}
+	// 输出上传图片控件
+	if(@ObjectUtils.toBoolean(table.optionMap['isImageUpload'])){
+%>
+			<div class="form-row">
+				<div class="form-group col-md-12">
+					<label>图片上传</label>
+					<${'#'}form:fileupload id="uploadImage" bizKey="\${${className}.id}" bizType="${className}_image"
+							uploadType="image" class="" readonly="false"/>
+				</div>
+			</div>
+<%
+	}
+	// 输出上传附件控件
+	if(@ObjectUtils.toBoolean(table.optionMap['isFileUpload'])){
+%>
+			<div class="form-row">
+				<div class="form-group col-md-12">
+					<label>附件上传</label>
+					<${'#'}form:fileupload id="uploadFile" bizKey="\${${className}.id}" bizType="${className}_file"
+						uploadType="all" class="" readonly="false"/>
+				</div>
+			</div>
+<%
+	}
+%>
+        </div>
+        <div class="card-footer pd-sm-l-30">
+            <div class="row">
+                <div class="col-sm-offset-2 col-sm-10">
+                	\<% if(expIf("hasAuthority('${permissionPrefix}:edit')")){ %>
+                    <button type="submit" class="btn btn-sm btn-primary">保存提交</button>
+                    \<% } %>
+                    <button type="button" class="btn btn-sm btn-default" onclick="js.closeCurrentTabPage()">关闭窗口</button>
+                </div>
+            </div>
+        </div>
+   </${'#'}form:form>
+</div>
+\<% } %>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				js.closeCurrentTabPage(function(contentWindow){
+				<% if(table.isTreeEntity){ %>
+					contentWindow.$('#dataGrid').dataGrid('refreshTreeChildren',
+							$('#parentCode').val(), '\${${className}.${idParam}}');
+				<% }else{ %>
+					contentWindow.page();
+				<% } %>
+				});
+			}
+		}, "json");
+    }
+});
+<% if(table.isTreeEntity){ %>
+
+// 选择上级节点回调方法
+function treeselectCallback(id, act, index, layero){
+}
+<% } %>
+</script>]]>
+	</content>
+</template>

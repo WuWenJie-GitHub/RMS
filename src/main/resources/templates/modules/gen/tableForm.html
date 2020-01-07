@@ -1,0 +1,636 @@
+<% layout('/layouts/default.html', {title: '代码生成管理', libs: ['validate', 'dataGrid']}){ %>
+<div class="card bd-0">
+    <div class="card-header d-flex align-items-start justify-content-between box-header fixed">
+        <div class="pt-1">${genTable.isNewRecord ? '新增配置' : '编辑配置'}</div>
+        <div class="d-flex">
+        	<ul class="nav nav-tabs nav-card" id="myTab" role="tablist">  
+	        	<li class="nav-item"><a class="nav-link ${op == 'step1' ? 'active' : ''}" id="s1_tab" data-toggle="tab" href="#tab1" role="tab" aria-controls="tab1" aria-selected="${op == 'step1'}">配置信息</a></li>  
+	        	<li class="nav-item"><a class="nav-link ${op == 'step2' ? 'active' : ''}" id="s2_tab" data-toggle="tab" href="#tab2" role="tab" aria-controls="tab2" aria-selected="${op == 'step2'}">字段列表</a></li> 
+	        	<li class="nav-item"><a class="nav-link ${op == 'step3' ? 'active' : ''}" id="s3_tab" data-toggle="tab" href="#tab3" role="tab" aria-controls="tab3" aria-selected="${op == 'step3'}">生成信息</a></li>
+        	</ul>
+        </div>
+    </div>
+    <#form:form id="inputForm"  model="${genTable}" action="${ctx}/genTable/save" method="post">
+        <div class="card-body card-content-fixed pd-0">
+        <div class="tab-content" id="myTabContent">  
+	        <div class="tab-pane fade ${op == 'step1' ? 'show active' : ''} pd-sm-t-30 pd-sm-b-40 pd-sm-x-30" id="tab1" role="tabpanel" aria-labelledby="s1_tab">
+	            <div class="form-row">
+	                <div class="form-group col-md-6">
+	                    <label for="parentCode">表名 <span class="tx-danger">*</span></label>
+	                    <#form:hidden path="isNewRecord"/>
+						<#form:input path="tableName" maxlength="64" class="form-control required"/>
+	                </div>
+	                <div class="form-group col-md-6">
+	                    <label for="menuType">表说明 <span class="tx-danger">*</span></label>
+		                <#form:input path="comments" maxlength="500" class="form-control required"/>
+	                </div>
+	            </div>
+	            <div class="form-row">
+		            <div class="form-group  col-md-6">
+		                <label>实体类名称 <span class="tx-danger">*</span></label>
+		                <#form:input path="className" maxlength="100" class="form-control required"/>
+		            </div>
+		            <div class="form-group  col-md-6">
+		                <label>功能作者 <span class="tx-danger">*</span></label>
+		                <#form:input path="functionAuthor" maxlength="50" class="form-control required" defaultValue="ruyang"/>
+		            </div>
+	            </div>
+	            <div class="form-group">
+	                <label>备注信息</label>
+	                 <#form:textarea path="remarks" class="form-control" row="5" placeholder="请输入" />
+	            </div>
+	            
+	        </div>  
+	        <div class="tab-pane fade  ${op == 'step2' ? 'show active' : ''} pd-10-f" id="tab2" role="tabpanel" aria-labelledby="s2_tab">
+	            <table id="dataGrid"></table>
+	        </div> 
+	        <div class="tab-pane fade  ${op == 'step3' ? 'show active' : ''} pd-sm-t-30 pd-sm-b-40 pd-sm-x-30"  id="tab3" role="tabpanel" aria-labelledby="s3_tab">
+	             <div class="form-row">
+	                <div class="form-group col-md-6">
+	                    <label for="parentCode">生成模板 <span class="tx-danger">*</span></label>
+	                    <#form:select path="tplCategory" items="${config.tplCategoryList}" itemLabel="label" itemValue="value" blankOption="true" style="width:100%" class="form-control select2 select2-no-search required"/>
+	                </div>
+	                <div class="form-group col-md-6">
+	                    <label for="menuType">生成包路径 <span class="tx-danger">*</span></label>
+		                <#form:input path="packageName" maxlength="500" class="form-control required"/>
+	                </div>
+	            </div>
+	            <div class="form-row">
+		            <div class="form-group  col-md-6">
+		                <label>生成功能名</label>
+		                <#form:input path="functionName" maxlength="200" class="form-control required"/>
+		            </div>
+		            <div class="form-group  col-md-6">
+		                <label>生成模块名 <span class="tx-danger">*</span></label>
+		                <#form:input path="moduleName" maxlength="100" class="form-control required"/>
+		            </div>
+	            </div>
+	            <div class="form-row">
+		            <div class="form-group  col-md-6">
+		                <label>功能名（简写）</label>
+		                <#form:input path="functionNameSimple" maxlength="50" class="form-control required"/>
+		            </div>
+		            <div class="form-group  col-md-6">
+		                <label>生成基础路径 <span class="tx-danger">*</span></label>
+		                <div class="input-group">
+						  <div class="input-group-prepend">
+						    <button class="btn btn-outline-light dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">最近路径快速选择</button>
+						    <div class="dropdown-menu tx-13">
+						      <a class="dropdown-item" href="javascript:;" onclick="genBaseDirVal('${@StringUtils.replace(defaultGenBaseDir,"\\","\\\\")}')">恢复默认的生成基础路径</a>
+						      <% for(var e in genBaseDirList){ if (isNotEmpty(e.genBaseDir) && e.genBaseDir != defaultGenBaseDir){ %>
+								<a  class="dropdown-item" href="javascript:;" onclick="genBaseDirVal('${@StringUtils.replace(e.genBaseDir,"\\","\\\\")}')">${e.genBaseDir}</a>
+							  <% } } %>
+						    </div>
+						  </div>
+						  <#form:input path="genBaseDir" maxlength="2000" class="form-control"/>
+						</div>
+		            </div>
+	            </div>
+	            <div class="form-row options treeGrid d-none">
+		            <div class="form-group  col-md-6">
+		                <label>树显示编码字段 <span class="tx-danger">*</span></label>
+		                <#form:select  style="width:100%" name="optionMap['treeViewCode']" items="${genTable.columnList}"
+											itemLabel="columnNameAndComments" itemValue="columnName" blankOption="true"
+											value="${genTable.optionMap['treeViewCode']}" class="form-control select2 required"/>
+		            </div>
+		            <div class="form-group  col-md-6">
+		                <label>树显示名称字段 <span class="tx-danger">*</span></label>
+		                <#form:select  style="width:100%" name="optionMap['treeViewName']" items="${genTable.columnList}"
+											itemLabel="columnNameAndComments" itemValue="columnName" blankOption="true"
+											value="${genTable.optionMap['treeViewName']}" class="form-control select2 required"/>
+		            </div>
+	            </div>
+	            <div class="form-row">
+		            <div class="form-group  col-md-6">
+		                <label>是否有停用启用</label>
+		                <div class="radio-list d-flex pd-t-10">
+		                <#form:radio name="optionMap['isHaveDisableEnable']" dictType="sys_yes_no"
+											value="${@StringUtils.defaultString(genTable.optionMap['isHaveDisableEnable'], @Global.NO)}"
+											class="form-control"/></div>
+		            </div>
+		            <div class="form-group  col-md-6">
+		                <label>是否有删除功能</label>
+		                <div class="radio-list d-flex pd-t-10">
+		                <#form:radio name="optionMap['isHaveDelete']" dictType="sys_yes_no"
+											value="${@StringUtils.defaultString(genTable.optionMap['isHaveDelete'], @Global.YES)}"
+											class="form-control"/></div>
+		            </div>
+	            </div>
+	            <div class="form-row">
+		            <div class="form-group  col-md-6">
+		                <label>是否可上传图片</label>
+		                <div class="radio-list d-flex pd-t-10">
+		                <#form:radio name="optionMap['isImageUpload']" dictType="sys_yes_no"
+											value="${@StringUtils.defaultString(genTable.optionMap['isImageUpload'], @Global.NO)}"
+											class="form-control"/></div>
+		            </div>
+		            <div class="form-group  col-md-6">
+		                <label>是否可上传附件</label>
+		                <div class="radio-list d-flex pd-t-10">
+		                <#form:radio name="optionMap['isFileUpload']" dictType="sys_yes_no"
+											value="${@StringUtils.defaultString(genTable.optionMap['isFileUpload'], @Global.NO)}"
+											class="form-control"/></div>
+		            </div>
+	            </div>
+	        </div>
+          </div>
+         </div>
+        <div class="card-footer pd-sm-l-30">
+            <div class="row">
+                <div class="col-sm-offset-2">
+                	<#form:hidden path="flag"/>
+					<% if(op != 'step3' && genTable.flag != '0'){ %>
+						<button id="btnNext" type="submit" class="btn btn-sm btn-primary"
+							onclick="$('#flag').val('0');" title="保存并进入到下一步配置。"><i class="la la-arrow-circle-right"></i> 下一步</button>&nbsp;
+						<button id="btnSave" type="submit" class="btn btn-sm btn-primary ${op == 'step1' ? 'd-none' : ''}"
+							onclick="$('#flag').val('');" title="先保存起来，不进行下一步。"><i class="la la-check"></i> 保存并关闭</button>&nbsp;
+					<% } else if (!genTable.parentExists){ %>
+						<button id="btnSubmit" type="submit" class="btn btn-sm btn-primary"
+							onclick="$('#flag').val('1');" title="输出到控制台，不生成文件。"><i class="la la-check"></i> 保存并编译</button>&nbsp;
+						<button id="btnSubmitAndGen" type="submit" class="btn btn-sm btn-danger"
+							onclick="$('#flag').val('2');" title="输出到控制台，并生成文件。"><i class="la la-bug"></i> 保存并生成代码</button>&nbsp;
+					<% }else{ %>
+						<button id="btnSave" type="submit" class="btn btn-sm btn-primary" onclick="$('#flag').val('');"><i class="la la-check"></i> 保 存</button>&nbsp;
+					<% } %>
+                    <button type="button" class="btn btn-sm btn-default" onclick="js.closeCurrentTabPage()">关闭窗口</button>
+                </div>
+                <% if(!genTable.parentExists){ %>
+                <div class="col-sm-offset-2 mg-l-15 pd-t-7">
+                    <#form:checkbox name="replaceFile" label="是否替换现有文件"  class="custom-control-input" value="1"/>
+                </div>
+                <% } %>
+            </div>
+        </div>
+    </#form:form>
+</div>
+<% } %>
+<script src="${ctxStatic}/vendors/jqGrid/4.7/plugins/jquery.tablednd.js"></script>
+<script>
+<% if(isNotEmpty(message!)){ %>
+js.showMessage('${message}');
+<% } %>
+
+var op = '${op}',
+tableName = '${genTable.tableName}',
+columnList = ${toJson(genTable.columnList)},
+config = {
+	javaTypeList: ${toJson(config.javaTypeList)},
+	queryTypeList: ${toJson(config.queryTypeList)},
+	showTypeList: ${toJson(config.showTypeList)},
+	fieldValidList: ${toJson(config.fieldValidList)},
+	gridRowColList: ${toJson(config.gridRowColList)}
+}
+
+$("#dataGrid").dataGrid({
+    data: columnList,
+    datatype: "local",
+    rowNum: 3000,
+    sortableColumn: false,
+    dataId: "aa",
+    autoGridHeight: function() {
+        return $(window).height() - $(".card-header").outerHeight() - $(".card-footer").outerHeight() - 95
+    },
+    autoGridWidth: function() {
+        return $(".card-body").width() - 20
+    },
+    columnModel: [{
+        header: "编码",
+        name: "id",
+        frozen: true,
+        hidden: true,
+        editable: true
+    },
+    {
+        header: "状态",
+        name: "status",
+        frozen: true,
+        hidden: true,
+        editable: true
+    },
+    {
+        header: "列名",
+        name: "columnSort",
+        width: 30,
+        frozen: true,
+        align: "center",
+        editable: true,
+        edittype: "text",
+        editoptions: {
+            maxlength: "8",
+            "class": "form-control required digits d-none columnSort",
+            dataInit: function(a) {
+                if ($(a).val() == "") {
+                    $(a).val($(a).closest("table").find("tr").length * 10)
+                }
+                $(a).parent().append('<i class="la la-sort" style="color:#aaa;cursor:move"></i>')
+            }
+        },
+        classes: "columnSort"
+    },
+    {
+        header: "列名",
+        name: "columnName",
+        width: 110,
+        frozen: true,
+        formatter: function(d, b, c, a) {
+            if (c.status == Global.STATUS_DELETE) {
+                return '<span title="已被删除的列，保存后下次将不可见" style="color:red">' + c.columnName + ' <i class="fa icon-question"></i></span>'
+            }
+            return c.columnName
+        }
+    },
+    {
+        header: "列名",
+        name: "columnName",
+        frozen: true,
+        hidden: true,
+        editable: true
+    },
+    {
+        header: "列说明",
+        name: "comments",
+        width: 110,
+        frozen: true,
+        editable: true,
+        edittype: "text",
+        editoptions: {
+            maxlength: "100",
+            "class": "form-control required"
+        }
+    },
+    {
+        header: "字段类型",
+        name: "jdbcType",
+        hidden: true,
+        editable: true
+    },
+    {
+        header: "字段类型",
+        name: "jdbcType",
+        width: 110,
+        formatter: function(d, b, c, a) {
+            return c.jdbcType
+        }
+    },
+    {
+        header: "属性类型",
+        name: "javaType",
+        width: 90,
+        editable: true,
+        edittype: "select",
+        editoptions: {
+            "class": "form-control select2 required",
+            "data-msg-required": "请选择属性类型",
+            items: (config.javaTypeList),
+            itemLabel: "label",
+            itemValue: "value",
+            dataInit: function(a) {
+                $(a).select2().on("change",
+                function() {
+                    try {
+                        $(this).resetValid()
+                    } catch(b) {}
+                })
+            }
+        }
+    },
+    {
+        header: '属性名称 <i class="fa icon-question" title="实体对象的属性字段支持复杂格式：对象名.属性名|属性名2，例如：用户user.userCode|userName，主要用于树选择组件；如果子表，则写主表实体类名 + 主键，例如：formEntity.entityId"></i>',
+        name: "javaField",
+        width: 100,
+        editable: true,
+        edittype: "text",
+        editoptions: {
+            maxlength: "100",
+            "class": "form-control required",
+            "data-msg-required": "请选择属性名称"
+        }
+    },
+    {
+        header: "主键",
+        name: "isPk",
+        width: 40,
+        align: "center",
+        editable: true,
+        edittype: "checkbox",
+        editoptions: {
+        	"class": "custom-control-input",
+            value: "1",
+            dataInit: function(a) {
+            	$(a).wrap("<div class='custom-control custom-checkbox'></div>");
+            	$(a).after("<label class='custom-control-label' for='"+a.id+"'></label>")
+            }
+        }
+    },
+    {
+        header: "插入",
+        name: "isInsert",
+        width: 40,
+        align: "center",
+        editable: true,
+        edittype: "checkbox",
+        editoptions: {
+            "class": "custom-control-input",
+            value: "1",
+            dataInit: function(a) {
+            	$(a).wrap("<div class='custom-control custom-checkbox'></div>");
+            	$(a).after("<label class='custom-control-label' for='"+a.id+"'></label>")
+            }
+        }
+    },
+    {
+        header: "更新",
+        name: "isUpdate",
+        width: 40,
+        align: "center",
+        editable: true,
+        edittype: "checkbox",
+        editoptions: {
+        	"class": "custom-control-input",
+            value: "1",
+            dataInit: function(a) {
+            	$(a).wrap("<div class='custom-control custom-checkbox'></div>");
+            	$(a).after("<label class='custom-control-label' for='"+a.id+"'></label>")
+            }
+        }
+    },
+    {
+        header: "列表",
+        name: "isList",
+        width: 40,
+        align: "center",
+        editable: true,
+        edittype: "checkbox",
+        editoptions: {
+        	"class": "custom-control-input",
+            value: "1",
+            dataInit: function(a) {
+            	$(a).wrap("<div class='custom-control custom-checkbox'></div>");
+            	$(a).after("<label class='custom-control-label' for='"+a.id+"'></label>")
+            }
+        }
+    },
+    {
+        header: "查询",
+        name: "isQuery",
+        width: 40,
+        align: "center",
+        editable: true,
+        edittype: "checkbox",
+        editoptions: {
+        	"class": "custom-control-input",
+            value: "1",
+            dataInit: function(a) {
+            	$(a).wrap("<div class='custom-control custom-checkbox'></div>");
+            	$(a).after("<label class='custom-control-label' for='"+a.id+"'></label>")
+            }
+        }
+    },
+    {
+        header: "匹配方式",
+        name: "queryType",
+        width: 100,
+        editable: true,
+        edittype: "select",
+        editoptions: {
+            "class": "form-control required",
+            "data-msg-required": "请选择匹配方式",
+            items: (config.queryTypeList),
+            itemLabel: "label",
+            itemValue: "value",
+            dataInit: function(a) {
+                $(a).select2().on("change",
+                function() {
+                    try {
+                        $(this).resetValid()
+                    } catch(b) {}
+                })
+            }
+        }
+    },
+    {
+        header: "编辑",
+        name: "isEdit",
+        width: 40,
+        align: "center",
+        editable: true,
+        edittype: "checkbox",
+        editoptions: {
+        	"class": "custom-control-input",
+            value: "1",
+            dataInit: function(a) {
+            	$(a).wrap("<div class='custom-control custom-checkbox'></div>");
+            	$(a).after("<label class='custom-control-label' for='"+a.id+"'></label>")
+            }
+        }
+    },
+    {
+        header: "必填",
+        name: "isNull",
+        width: 40,
+        align: "center",
+        editable: true,
+        edittype: "checkbox",
+        editoptions: {
+        	"class": "custom-control-input",
+            value: "1",
+            dataInit: function(a) {
+            	$(a).wrap("<div class='custom-control custom-checkbox'></div>");
+            	$(a).after("<label class='custom-control-label' for='"+a.id+"'></label>")
+            }
+        }
+    },
+    {
+        header: "控件类型",
+        name: "showType",
+        width: 120,
+        editable: true,
+        edittype: "select",
+        editoptions: {
+            "class": "form-control required",
+            "data-msg-required": "请选择控件类型",
+            items: (config.showTypeList),
+            itemLabel: "label",
+            itemValue: "value",
+            dataInit: function(a) {
+                $(a).select2().on("change",
+                function() {
+                    try {
+                        $(this).resetValid()
+                    } catch(b) {}
+                })
+            }
+        }
+    },
+    {
+        header: '栅格 <i class="fa icon-question" title="栅格定义：行/标签/输入框"></i>',
+        name: "optionMap['gridRowCol']",
+        width: 120,
+        editable: true,
+        edittype: "select",
+        editoptions: {
+            "class": "form-control",
+            items: (config.gridRowColList),
+            itemLabel: "label",
+            itemValue: "value",
+            dataInit: function(a) {
+                $(a).select2().on("change",
+                function() {
+                    try {
+                        $(this).resetValid()
+                    } catch(b) {}
+                })
+            }
+        }
+    },
+    {
+        header: '<span title="强制新行、换行，强制输出一个&lt;div class=&quot;row&quot;&gt;&lt;/div&gt;">新行</span>',
+        name: "optionMap['isNewLine']",
+        align: "center",
+        width: 40,
+        editable: true,
+        edittype: "checkbox",
+        editoptions: {
+        	"class": "custom-control-input",
+            value: "1",
+            dataInit: function(a) {
+            	$(a).wrap("<div class='custom-control custom-checkbox'></div>");
+            	$(a).after("<label class='custom-control-label' for='"+a.id+"'></label>")
+            }
+        }
+    },
+    {
+        header: "字典类型",
+        name: "optionMap['dictType']",
+        width: 150,
+        formatter: function(d, b, c, a) {
+            b.colModel.data[b.rowId + "_dictName"] = js.val(c, "optionMap.dictName");
+            return b.colModel.data[b.rowId]
+        },
+        unformat: function(c, b, a) {
+            return b.colModel.data[b.rowId] + "|" + b.colModel.data[b.rowId + "_dictName"]
+        },
+        editable: true,
+        edittype: "custom",
+        editoptions: {
+            custom_element: function(b, a) {
+                return js.template("treeselectTpl", {
+                    id: "dict_" + a.id.replace(/[\'\[\]]/g, "_"),
+                    title: "字段类型",
+                    name: "optionMap['dictType']",
+                    value: b.split("|")[0],
+                    labelName: "optionMap['dictName']",
+                    labelValue: b.split("|")[1],
+                    url: "${ctx}/genTable/dictTypeTreeData?excludeCode=",
+                    isReturnValue: "true",
+                    cssClass: "form-control"
+                })
+            }
+        }
+    },
+    {
+        header: "字段验证",
+        name: "optionMap['fieldValid']",
+        width: 170,
+        editable: true,
+        edittype: "select",
+        editoptions: {
+            "class": "form-control",
+            multiple: true,
+            items: (config.fieldValidList),
+            itemLabel: "label",
+            itemValue: "value",
+            dataInit: function(a) {
+                $(a).select2().on("change",
+                function() {
+                    try {
+                        $(this).resetValid()
+                    } catch(b) {}
+                })
+            }
+        }
+    }],
+    groupHeaders: {
+        twoLevel: [{
+            startColumnName: "id",
+            numberOfColumns: 13,
+            titleText: "字段"
+        },
+        {
+            startColumnName: "isList",
+            numberOfColumns: 3,
+            titleText: "列表"
+        },
+        {
+            startColumnName: "isEdit",
+            numberOfColumns: 7,
+            titleText: "表单"
+        }]
+    },
+    editGrid: true,
+    editGridInitRowNum: 0,
+    editGridInitAllRowEdit: true,
+    editGridAddRowBtn: $("#dataGridAdd"),
+    editGridAddRowInitData: {
+        id: "",
+        status: Global.STATUS_NORMAL
+    },
+    editGridInputFormListName: "columnList",
+    editGridInputFormListAttrs: "id,status,columnName,comments,jdbcType,javaType,javaField,isPk,isNull,isInsert,isUpdate,columnSort,isList,isQuery,queryType,isEdit,showType,optionMap['isNewLine'],optionMap['gridRowCol'],optionMap['fieldValid'],optionMap['dictType'],optionMap['dictName']",
+    ajaxSuccess: function(a) {
+        $("#dataGrid_columnSort").attr("colspan", "2").next().hide()
+    }
+});
+$("#dataGrid").tableDnD({
+    onDragClass: "dragClass",
+    dragHandle: "columnSort",
+    onDrop: function(a, b) {
+        $(a).find("input.columnSort").each(function(c) {
+            $(this).val((c + 1) * 10)
+        })
+    }
+});
+$("#inputForm").validate({
+    ignore: ":hidden",
+    submitHandler: function(a) {
+        if ((op == "step1" || op == "step2") && $("#s1_tab").hasClass("active")) {
+            $("#btnSave").removeClass("d-none");
+            $("#s2_tab").click();
+            return false
+        }
+        js.ajaxSubmitForm($(a),
+        function(b) {
+            js.showMessage(b.message);
+            if (b.result == Global.TRUE) {
+                if ($("#flag").val() == "0") {
+                    location = "${ctx}/genTable/form?tableName=" + tableName + "&op=step3"
+                } else {
+                    js.closeCurrentTabPage(function(c) {
+                        c.page()
+                    })
+                }
+            }
+        },
+        "json")
+    }
+});
+$("#tplCategory").change(function() {
+    $(".options").addClass("d-none");
+    var a = $(this).val();
+    if (a != "") {
+        $("." + $(this).val()).removeClass("d-none")
+    }
+}).change();
+function genBaseDirVal(val){
+	if(val){
+		$('#genBaseDir').val(val)
+	}
+}
+</script>
+<script id="treeselectTpl" type="text/template">//<!--<div>
+<#form:treeselect id="{{d.id}}" title="{{d.title}}" name="{{d.name}}" value="{{d.value}}"
+	labelName="{{d.labelName}}" labelValue="{{d.labelValue}}" url="{{d.url}}"
+	isReturnValue="{{d.isReturnValue}}" class="{{d.cssClass}}"
+	btnClass="btn-sm" allowClear="true"/>
+</div>//--></script>
+</body></html>

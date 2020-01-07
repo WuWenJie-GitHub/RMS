@@ -1,0 +1,98 @@
+  <% layout('/layouts/default.html', {title: '菜单管理', libs: ['dataGrid']}){ %>
+  <div class="card bd-0">
+    <div class="card-header d-flex align-items-start justify-content-between box-header">
+      <div class="pt-1">菜单管理</div>
+      <div class="d-flex">
+          <button type="button" id="btnSearch" title="查询" class="btn btn-xs btn-default"><i class="fa fa-filter"></i>查询</button>
+          <button type="button" id="btnRefreshTree" class="btn btn-xs btn-default mg-l-10" title="刷新"><i class="fa fa-redo-alt"></i> 刷新</button>
+          <button type="button" id="btnExpandTreeNode" class="btn btn-xs btn-default mg-l-10" title="展开一级"><i class="fa fa-angle-double-down"></i> 展开</button>
+          <button type="button" id="btnCollapseTreeNode" class="btn btn-xs btn-default mg-l-10" title="折叠全部"><i class="fa fa-angle-double-up"></i> 折叠</button>
+          <% if(expIf("hasAuthority('sys:menu:edit')")){ %>
+          <a href="${ctx}/sys/menu/form" class="btn btn-xs btn-primary mg-l-10 btnTool" title="新增菜单"><i class="fa fa-plus"></i>新增</a>
+          <button type="button" id="btnUpdateSort" class="btn btn-xs btn-default mg-l-10" title="保存排序"><i class="fa fa-sort-amount-down"></i> 保存排序</button>
+          <% } %>
+      </div>
+    </div>
+    <div class="card-body pd-10">
+      <#form:form id="searchForm" model="${menu}" action="${ctx}/sys/menu/listData" method="post" class="form-horizontal">
+        <div class="form-group">
+          <div class="input-group wd-250">
+            <div class="input-group-prepend">
+              <span class="input-group-text">菜单名称</span>
+            </div>
+            <#form:input path="menuName" maxlength="50" class="form-control" />
+          </div>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary btn-sm">查询</button>
+          <button type="reset" class="btn btn-default btn-sm">重置</button>
+        </div>
+      </#form:form>
+      <#form:form id="dataGridForm" action="${ctx}/sys/menu/updateTreeSort" method="post">
+      <table id="dataGrid"></table>
+      </#form:form>
+    </div>
+  </div>
+<% } %>
+  <script>
+//初始化DataGrid对象
+  $('#dataGrid').dataGrid({
+  	searchForm: $("#searchForm"),
+  	columnModel: [ 
+  		{header:'菜单名称', name:'menuName', width:200, formatter: function(val, obj, row, act){
+  			return '<i class="'+row.menuIcon+'" style="color:'+row.color+'"></i> <a href="${ctx}/sys/menu/form?menuCode='+row.menuCode+'" class="btnList" style="color:'+row.color+'" data-title="编辑菜单">'+val+'</a>';
+  		}},
+  		{header:'类型', name:'menuType', width:50, fixed:true, align:"center", formatter: function(val, obj, row, act){
+  			return js.getDictLabel(${@DictUtils.getDictListJson('sys_menu_type')}, val, '未知', true);
+  		}},
+  		{header:'可见', name:'isShow', width:50, fixed:true, align:"center", formatter: function(val, obj, row, act){
+  			return js.getDictLabel(${@DictUtils.getDictListJson('sys_show_hide')}, val, '未知', true);
+  		}},
+  		{header:'排序', name:'treeSort', width:63, align:"center", formatter: function(val, obj, row, act){
+  			var html = [];
+  			<% if(expIf("hasAuthority('sys:menu:edit')")){ %>
+  			html.push('<input type="hidden" name="ids" value="'+row.key+'"/>');
+			html.push('<input name="sorts" type="text" value="'+row.treeSort+'" style="width:50px;height:19px;margin:0;padding:0;text-align:center;border:1px solid #ddd">');
+			<% }else{ %>
+			html.push(row.treeSort);
+			<% } %>
+			return html.join('');
+  		}},
+  		{header:'链接', name:'menuHref', width:150},
+  		{header:'权限标识', name:'permission', width:150},
+  		{header:'权重', name:'weight', width:90, fixed:true, align:"center", formatter: function(val, obj, row, act){
+  			return js.getDictLabel(${@DictUtils.getDictListJson('sys_menu_weight')}, val, '未知', true);
+  		}},
+  		{header:'操作', name:'actions', width:100, fixed:true, sortable:false, formatter: function(val, obj, row, act){
+  			var actions = [];
+  			<% if(expIf("hasAuthority('sys:menu:edit')")){ %>
+  				actions.push('<a href="${ctx}/sys/menu/form?menuCode='+row.key+'" class="btnList" title="编辑菜单"><i class="la la-edit"></i></a>&nbsp;');
+  				actions.push('<a href="${ctx}/sys/menu/delete?menuCode='+row.key+'" class="btnList" title="删除菜单" data-confirm="确认要删除该菜单及所有子菜单吗？" data-deltreenode="'+row.menuCode+'"><i class="la la-trash"></i></a>&nbsp;');
+  				actions.push('<a href="${ctx}/sys/menu/form?parentCode='+row.key+'" class="btnList" title="新增下级菜单"><i class="la la-plus-square"></i></a>&nbsp;');
+  				//actions.push('<a href="#" title="只看本节点" onclick="$(\'#dataGrid\').dataGrid(\'refreshTree\', 1, \''+row.id+'\')"><i class="fa fa-arrow-circle-down"></i></a>&nbsp;');
+  			<% } %> 
+  			return actions.join('');
+  		}}
+  	],
+  	dataId: "menuCode",
+  	treeGrid: true,			// 启用树结构表格
+  	defaultExpandLevel: 0,	// 默认展开的层次
+  	expandNodeClearPostData: 'menuName', // 展开节点清理请求参数数据（一般设置查询条件的字段属性，否则在查询后，不能展开子节点数据）
+  	// 加载成功后执行事件
+  	ajaxSuccess: function(data){
+  		feather.replace();
+  	}
+  });
+
+  // 绑定更新排序按钮
+  $('#btnUpdateSort').click(function(){
+  	 js.ajaxSubmitForm($("#dataGridForm"), function(data){
+  		if(data.result == Global.TRUE){
+  			$('#btnRefreshTree').click();
+  		}
+  		js.showMessage(data.message);
+  	}, "json");
+  });
+  </script>
+</body>
+</html>

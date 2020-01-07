@@ -1,0 +1,54 @@
+<div class="off-canvas off-canvas-overlay off-canvas-right ${class!'wd-300'}" <%if(isNotEmpty(style!)){%>style="${style!}"<%}%> id="${id!}_offCanvas">
+      <a href="#" class="close" id="${id!}_close"><i data-feather="x"></i></a>
+      <div class="pd-25 ht-100p tx-13" >
+        <div class="placeholder-paragraph mg-b-25" id="${id!}_placeholderLoading">
+          <h6 class="tx-inverse mg-t-50 mg-b-25">正在获取，请稍候...</h6>
+		  <div class="line"></div>
+		  <div class="line"></div>
+		  <div class="line"></div>
+		  <div class="line"></div>
+		</div>
+		<div class="mg-t-50" id="${id!}_viewContent"></div>
+		<script type="text/html" id="${id!}_scriptContent">
+			${tagBody}
+        </script>
+      </div>
+</div>
+<script>
+function openOffCanvas_${id!}(url, data, callback, isUseData){
+	$("#${id!}_offCanvas").addClass('show');
+    $("#${id!}_placeholderLoading").removeClass('d-none');
+    $("#${id!}_viewContent").addClass('d-none');
+    if(isUseData){
+    	$("#${id!}_placeholderLoading").addClass('d-none');
+		js.template('${id!}_scriptContent', data, function(content){
+			$("#${id!}_viewContent").html(content);
+		});
+		$("#${id!}_viewContent").removeClass('d-none');
+		if (typeof callback == "function") {
+            callback(data, status, xhr)
+        } else {
+            js.log(data)
+        }
+    }else{
+	    js.ajaxSubmit(url, data, function(data, status, xhr){
+			$("#${id!}_placeholderLoading").addClass('d-none');
+			js.template('${id!}_scriptContent', data, function(content){
+				$("#${id!}_viewContent").html(content);
+			});
+			
+			$("#${id!}_viewContent").removeClass('d-none');
+			if (typeof callback == "function") {
+	            callback(data, status, xhr)
+	        } else {
+	            js.log(data)
+	        }
+		}, "json");
+    }
+}
+
+$('#${id!}_close').on('click', function(e){
+    e.preventDefault();
+    $(this).closest('.off-canvas').removeClass('show');
+})
+</script>

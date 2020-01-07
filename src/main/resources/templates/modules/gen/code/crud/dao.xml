@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template>
+	<name>dao</name>
+	<filePath>src/main/java/${packageName}/${moduleName}/mapper/${subModuleName}</filePath>
+	<fileName>${ClassName}Mapper.java</fileName>
+	<content><![CDATA[
+package ${packageName}.${moduleName}.mapper${isNotEmpty(subModuleName)?'.'+subModuleName:''};
+
+import org.apache.ibatis.annotations.Mapper;
+import ${packageName}.${moduleName}.model.domain${isNotEmpty(subModuleName)?'.'+subModuleName:''}.${ClassName};
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+/**
+ * ${functionName}Mapper接口
+ * @author ${functionAuthor}
+ * @version ${functionVersion}
+ */
+@Mapper
+public interface ${ClassName}Mapper extends BaseMapper<${ClassName}> {
+	
+}]]>
+	</content>
+</template>

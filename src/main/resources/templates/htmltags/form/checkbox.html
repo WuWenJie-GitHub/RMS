@@ -1,0 +1,52 @@
+<%
+var p = {
+
+	// 标签参数
+	id: id!,					// 元素ID，如果不填写，则与name相同
+	path: path!,				// 绑定form上model中属性的值
+	name: name!,				// 元素名称，不填写
+	value: value!,				// 元素值
+	defaultValue: defaultValue!,// 默认值 v4.1.5
+	
+	dictType: dictType!'',		// 字典类型，从字典里获取，自动设置items、itemLabel、itemValue
+	
+	items: items!([]),			// 列表数据，可接受对象集合，如：List<DictData>
+	itemLabel: itemLabel!'dictLabel',	// 指定列表数据中的什么属性名作为option的标签名
+	itemValue: itemValue!'dictValue',	// 指定列表数据中的什么属性名作为option的value值
+	
+	label: label!				// 只有一个复选按钮的情况下设置
+	
+};
+var id = p.id!p.name!p.path;
+var name = p.name!p.path;
+var value = p.value!;
+if(isEmpty(value!)&&isNotEmpty(p.path!)){
+	value = form.path(p.path);
+}
+if(isEmpty(value!)){
+	value = p.defaultValue;
+}
+var optClass = optClass!'custom-control custom-checkbox';
+//封装dictType To items
+if(isNotEmpty(p.dictType)){
+	var list = @DictUtils.getDictList(p.dictType);
+	if(@ListUtils.isNotEmpty(list)){
+		for(item in list){
+			array.add(p.items,item);
+		}
+	}
+}
+%>
+<% if(isNotEmpty(label!)){ %>
+<div class="${optClass}">
+	<input type="checkbox" name="${name}" id="${id}" value="${value!}" <%if(isNotEmpty(checked!)&&@ObjectUtils.toBoolean(checked)){%> checked="checked"<%}%><%if(isNotEmpty(readonly!)&&@ObjectUtils.toBoolean(readonly)){%> readonly="readonly"<%}%><%if(isNotEmpty(disabled!)&&@ObjectUtils.toBoolean(disabled)){%> disabled="disabled"<%}%><%if(isNotEmpty(class!)){%> class="${class!}"<%}%>>
+	<label class="custom-control-label" for="${id}">${label!}</label>
+</div>
+<%}else{ %>
+<% if(@ListUtils.isNotEmpty(p.items)){ for(item in p.items){ %>
+<div class="${optClass}">
+    <input type="checkbox" name="${name}" id="${id}-${item.itemValue}" <%if(@StringUtils.inString(item[p.itemValue], @StringUtils.split(value!,','))){%>checked="checked"<%}%> value="${item[p.itemValue]}"<%if(isNotEmpty(readonly!)&&@ObjectUtils.toBoolean(readonly)){%> readonly="readonly"<%}%><%if(isNotEmpty(disabled!)&&@ObjectUtils.toBoolean(disabled)){%> disabled="disabled"<%}%><%if(isNotEmpty(class!)){%> class="custom-control-input ${class!}"<%}%>>
+    <label class="custom-control-label" for="${id}-${item.itemValue}">${item[p.itemLabel]} </label>
+</div>
+<%}} %>
+<%}%>
